@@ -1,0 +1,408 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3677cd9ede84e78b2fff6331c6301da, type: 3}
+  m_Name: Questionnaire
+  m_EditorClassIdentifier: Unity.Multiplayer.Center.Questionnaire.QuestionnaireObject
+  Questionnaire:
+    FormatVersion: 1.0.0
+    Version: 1.1
+    Questions:
+    - Id: PlayerCount
+      Title: Player Count
+      Description: How many players will play together (at most)?
+      GlobalWeight: 1
+      ViewType: 3
+      DisplayCondition:
+        Conditions: []
+      Choices:
+      - Id: 2
+        Title: 2
+        ScoreImpacts:
+        - Solution: 0
+          Score: 0.3
+          Comment: Netcode for GameObjects can be used for 2 player games
+        - Solution: 2
+          Score: 0.6
+          Comment: A client hosted architecture is possible with 2 players
+      - Id: 4
+        Title: 4
+        ScoreImpacts:
+        - Solution: 0
+          Score: 0.2
+          Comment: Netcode for GameObjects can be used for 4 player games
+        - Solution: 2
+          Score: 0.4
+          Comment: A client hosted architecture is possible with 4 players
+      - Id: 8
+        Title: 8
+        ScoreImpacts:
+        - Solution: 1
+          Score: 0.1
+          Comment: Netcode for Entities would be slightly better with 8 players
+        - Solution: 3
+          Score: 0.2
+          Comment: A dedicated server architecture is better with 8 players
+      - Id: 12
+        Title: 12
+        ScoreImpacts:
+        - Solution: 1
+          Score: 0.4
+          Comment: Netcode for Entities would be better with 12 players
+        - Solution: 3
+          Score: 0.4
+          Comment: A dedicated server architecture is necessary with a high number
+            of players
+      - Id: 64+
+        Title: 64+
+        ScoreImpacts:
+        - Solution: 1
+          Score: 0.6
+          Comment: Netcode for Entities should be used for a very high number of
+            players
+        - Solution: 3
+          Score: 0.6
+          Comment: A dedicated server architecture is necessary with a high number
+            of players
+      IsMandatory: 1
+    - Id: Competitiveness
+      Title: Gameplay fairness
+      Description: Is your game competitive or casual?
+      GlobalWeight: 1
+      ViewType: 0
+      DisplayCondition:
+        Conditions: []
+      Choices:
+      - Id: Competitive
+        Title: Competitive
+        ScoreImpacts:
+        - Solution: 1
+          Score: 10
+          Comment: Netcode for Entities is a better solution for competitive games
+        - Solution: 3
+          Score: 100
+          Comment: A dedicated server architecture is recommended for competitive
+            games
+      - Id: Casual
+        Title: Casual
+        ScoreImpacts:
+        - Solution: 0
+          Score: 0.1
+          Comment: Netcode for GameObjects is a good solution for casual games
+        - Solution: 2
+          Score: 0.3
+          Comment: A client hosted architecture is a good solution for casual games
+      - Id: Co-operative
+        Title: Co-operative
+        ScoreImpacts:
+        - Solution: 0
+          Score: 0.1
+          Comment: Netcode for GameObjects is a good solution for casual games
+        - Solution: 2
+          Score: 0.3
+          Comment: A client hosted architecture is a good solution for casual games
+      IsMandatory: 0
+    - Id: Pace
+      Title: Gameplay Pace
+      Description: Is your game fast or slow-paced?
+      GlobalWeight: 0.4
+      ViewType: 3
+      DisplayCondition:
+        Conditions: []
+      Choices:
+      - Id: Slow
+        Title: Slow
+        ScoreImpacts:
+        - Solution: 0
+          Score: 0.4
+          Comment: Netcode for GameObjects can be used for slow-paced games
+      - Id: Medium
+        Title: Medium
+        ScoreImpacts: []
+      - Id: Fast
+        Title: Fast
+        ScoreImpacts:
+        - Solution: 1
+          Score: 0.5
+          Comment: Netcode for Entities tends to be better for fast paced games
+      IsMandatory: 0
+    - Id: Cheating
+      Title: Cheating
+      Description: How important is it to prevent cheating?
+      GlobalWeight: 1
+      ViewType: 0
+      DisplayCondition:
+        Conditions: []
+      Choices:
+      - Id: CheatingNotImportant
+        Title: Not so important
+        ScoreImpacts:
+        - Solution: 2
+          Score: 0.2
+          Comment: A client hosted architecture is more cost-effective if cheating
+            is not very important
+      - Id: CheatingImportant
+        Title: Very important
+        ScoreImpacts:
+        - Solution: 3
+          Score: 100
+          Comment: A dedicated server architecture is recommended if cheating prevention
+            is important
+      IsMandatory: 0
+    - Id: CostSensitivity
+      Title: Cost Sensitivity
+      Description: How do you think about costs?
+      GlobalWeight: 1
+      ViewType: 0
+      DisplayCondition:
+        Conditions: []
+      Choices:
+      - Id: BestExperience
+        Title: Favor best player experience
+        ScoreImpacts: []
+      - Id: BestMargin
+        Title: Favor best player margin
+        ScoreImpacts: []
+      - Id: NoCost
+        Title: Avoid costs
+        ScoreImpacts:
+        - Solution: 3
+          Score: -100
+          Comment: A dedicated server architecture costs money
+      IsMandatory: 0
+    - Id: NetcodeArchitecture
+      Title: Netcode Architecture
+      Description: Does your game require a custom netcode architecture?
+      GlobalWeight: 1
+      ViewType: 0
+      DisplayCondition:
+        Conditions: []
+      Choices:
+      - Id: ClientServer
+        Title: Client / Server
+        ScoreImpacts: []
+      - Id: LockstepSimulation
+        Title: Lockstep Simulation
+        ScoreImpacts:
+        - Solution: 4
+          Score: 100
+          Comment: Lockstep simulation requires you to implement your custom netcode
+            solution
+      - Id: MultiServerSessions
+        Title: Multi-Server Sessions
+        ScoreImpacts:
+        - Solution: 4
+          Score: 100
+          Comment: Multi-Server Sessions require you to implement your custom netcode
+            solution
+      - Id: ZeroInputLatency
+        Title: Zero-Input Latency
+        ScoreImpacts:
+        - Solution: 4
+          Score: 100
+          Comment: Zero-Input latency requires you to implement a custom netcode
+            solution
+      - Id: NoNetcode
+        Title: No Netcode
+        ScoreImpacts:
+        - Solution: 6
+          Score: 100
+          Comment: CloudCode is the recommended backend for async games which do
+            not need a netcode solution.
+        - Solution: 5
+          Score: 100
+          Comment: You selected "No Netcode" as requirement in the last question
+      - Id: NoInput
+        Title: I do not know
+        ScoreImpacts: []
+      IsMandatory: 0
+    PresetData:
+      Presets: 0200000005000000030000000600000007000000010000000800000004000000090000000a0000000b000000
+      Answers:
+      - Answers:
+        - QuestionId: Competitiveness
+          Answers:
+          - Competitive
+        - QuestionId: Pace
+          Answers:
+          - Fast
+        - QuestionId: Cheating
+          Answers:
+          - CheatingImportant
+        - QuestionId: CostSensitivity
+          Answers:
+          - BestExperience
+        - QuestionId: NetcodeArchitecture
+          Answers:
+          - ClientServer
+      - Answers:
+        - QuestionId: Competitiveness
+          Answers:
+          - Co-operative
+        - QuestionId: Pace
+          Answers:
+          - Slow
+        - QuestionId: Cheating
+          Answers:
+          - CheatingNotImportant
+        - QuestionId: CostSensitivity
+          Answers:
+          - NoCost
+        - QuestionId: NetcodeArchitecture
+          Answers:
+          - ClientServer
+      - Answers:
+        - QuestionId: Competitiveness
+          Answers:
+          - Competitive
+        - QuestionId: Pace
+          Answers:
+          - Fast
+        - QuestionId: Cheating
+          Answers:
+          - CheatingImportant
+        - QuestionId: CostSensitivity
+          Answers:
+          - BestExperience
+        - QuestionId: NetcodeArchitecture
+          Answers:
+          - ClientServer
+      - Answers:
+        - QuestionId: Competitiveness
+          Answers:
+          - Competitive
+        - QuestionId: Pace
+          Answers:
+          - Slow
+        - QuestionId: Cheating
+          Answers:
+          - CheatingImportant
+        - QuestionId: CostSensitivity
+          Answers:
+          - BestMargin
+        - QuestionId: NetcodeArchitecture
+          Answers:
+          - LockstepSimulation
+      - Answers:
+        - QuestionId: Competitiveness
+          Answers:
+          - Competitive
+        - QuestionId: Pace
+          Answers:
+          - Fast
+        - QuestionId: Cheating
+          Answers:
+          - CheatingImportant
+        - QuestionId: CostSensitivity
+          Answers:
+          - BestExperience
+        - QuestionId: NetcodeArchitecture
+          Answers:
+          - ClientServer
+      - Answers:
+        - QuestionId: Competitiveness
+          Answers:
+          - Co-operative
+        - QuestionId: Pace
+          Answers:
+          - Medium
+        - QuestionId: Cheating
+          Answers:
+          - CheatingNotImportant
+        - QuestionId: CostSensitivity
+          Answers:
+          - BestMargin
+        - QuestionId: NetcodeArchitecture
+          Answers:
+          - ClientServer
+      - Answers:
+        - QuestionId: Competitiveness
+          Answers:
+          - Co-operative
+        - QuestionId: Pace
+          Answers:
+          - Slow
+        - QuestionId: Cheating
+          Answers:
+          - CheatingImportant
+        - QuestionId: CostSensitivity
+          Answers:
+          - BestMargin
+        - QuestionId: NetcodeArchitecture
+          Answers:
+          - MultiServerSessions
+      - Answers:
+        - QuestionId: Competitiveness
+          Answers:
+          - Casual
+        - QuestionId: Pace
+          Answers:
+          - Slow
+        - QuestionId: Cheating
+          Answers:
+          - CheatingNotImportant
+        - QuestionId: CostSensitivity
+          Answers:
+          - NoCost
+        - QuestionId: NetcodeArchitecture
+          Answers:
+          - NoNetcode
+      - Answers:
+        - QuestionId: Competitiveness
+          Answers:
+          - Casual
+        - QuestionId: Pace
+          Answers:
+          - Slow
+        - QuestionId: Cheating
+          Answers:
+          - CheatingNotImportant
+        - QuestionId: CostSensitivity
+          Answers:
+          - BestMargin
+        - QuestionId: NetcodeArchitecture
+          Answers:
+          - NoNetcode
+      - Answers:
+        - QuestionId: Competitiveness
+          Answers:
+          - Competitive
+        - QuestionId: Pace
+          Answers:
+          - Fast
+        - QuestionId: Cheating
+          Answers:
+          - CheatingNotImportant
+        - QuestionId: CostSensitivity
+          Answers:
+          - NoCost
+        - QuestionId: NetcodeArchitecture
+          Answers:
+          - ZeroInputLatency
+      - Answers:
+        - QuestionId: Competitiveness
+          Answers:
+          - Co-operative
+        - QuestionId: Pace
+          Answers:
+          - Medium
+        - QuestionId: Cheating
+          Answers:
+          - CheatingNotImportant
+        - QuestionId: CostSensitivity
+          Answers:
+          - BestMargin
+        - QuestionId: NetcodeArchitecture
+          Answers:
+          - ClientServer
+  references:
+    version: 2
+    RefIds: []

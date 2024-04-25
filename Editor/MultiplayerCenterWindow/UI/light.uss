@@ -1,0 +1,15 @@
+/*
+ * CSS variables specific to light mode 
+ */
+:root {
+    --package-icon: url('Icons/Package.png');
+    --questionnaire-icon: url('Icons/Questionnaire.png');
+    --questionnaire-group-icon: url('Icons/GroupBox.png');
+    --info-icon: resource('_Help');
+    --standard-blue: #0F49BD;
+    --colors-incompatible-background: #C99700;
+    --comment-color: darkgray;
+    --highlight-background-color: #f2f2f2;
+    --theme-slider-background-color: #8F8F8F; /* From Default common light uss */
+    --badge-color-grey:#555555; /* From Default common light uss, feedback color */
+}

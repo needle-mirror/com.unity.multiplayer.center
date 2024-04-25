@@ -1,0 +1,215 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 53
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6a02e450cd04bb781e7728f2056251c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RecommenderSystemData:
+    TargetUnityVersion: 6000.0.0b13
+    RecommendedSolutions:
+    - Type: 2
+      Title: Client Hosted
+      MainPackageId: 
+      DocUrl: https://docs-multiplayer.unity3d.com/netcode/current/terms-concepts/network-topologies/#client-hosted-listen-server
+      ShortDescription: A player will be the host of your game. You will not need
+        to deploy a dedicated server to have the authority on your game logic. This
+        is also called a Listen Server Architecture.
+      RecommendedPackages:
+      - PackageId: com.unity.services.vivox
+        Type: 3
+        Reason: Adding real-time communication is always recommended to engage your
+          users.
+      - PackageId: com.unity.services.multiplayer
+        Type: 4
+        Reason: The Multiplayer Services Sessions are typically used with a client
+          hosted game.
+      - PackageId: com.unity.dedicated-server
+        Type: 5
+        Reason: The Dedicated Server package is only useful when you have a dedicated
+          server architecture and use Netcode for Gameobjects.
+      - PackageId: com.unity.multiplayer.widgets
+        Type: 4
+        Reason: The Multiplayer Widgets package helps with the rapid prototyping
+          of the Multiplayer Services Session features.
+    - Type: 3
+      Title: Dedicated Server
+      MainPackageId: 
+      DocUrl: https://docs-multiplayer.unity3d.com/netcode/current/terms-concepts/network-topologies/#dedicated-game-server
+      ShortDescription: You will have to deploy a dedicated server to have the authority
+        on your game logic.
+      RecommendedPackages:
+      - PackageId: com.unity.services.vivox
+        Type: 3
+        Reason: Adding real-time communication is always recommended to engage your
+          users.
+      - PackageId: com.unity.services.multiplayer
+        Type: 4
+        Reason: The Multiplayer Services package's Multiplay Hosting and Matchmaking
+          are Unity services that allow you to host your dedicated server in the
+          cloud and connect players.
+      - PackageId: com.unity.dedicated-server
+        Type: 3
+        Reason: The Dedicated Server package helps with the development for the dedicated
+          server platform.
+      - PackageId: com.unity.multiplayer.widgets
+        Type: 4
+        Reason: The Multiplayer Widgets package helps with the rapid prototyping
+          of the Multiplayer Services Session features.
+    - Type: 6
+      Title: Cloud Code
+      MainPackageId: com.unity.services.cloudcode
+      DocUrl: https://docs.unity.com/ugs/manual/cloud-code/manual
+      ShortDescription: Run your game logic in the cloud as serverless functions
+        and interact with other backend services.
+      RecommendedPackages:
+      - PackageId: com.unity.services.vivox
+        Type: 3
+        Reason: Adding real-time communication is always recommended to engage your
+          users.
+      - PackageId: com.unity.services.multiplayer
+        Type: 5
+        Reason: The Multiplayer Services package is not recommended when using Cloud
+          Code.
+      - PackageId: com.unity.dedicated-server
+        Type: 5
+        Reason: The Dedicated Server package is only useful when you have a dedicated
+          server architecture and use Netcode for Gameobjects.
+      - PackageId: com.unity.multiplayer.widgets
+        Type: 5
+        Reason: The Multiplayer Widgets package is not recommended when using Cloud
+          Code.
+    - Type: 0
+      Title: Netcode for GameObjects
+      MainPackageId: com.unity.netcode.gameobjects
+      DocUrl: 
+      ShortDescription: Netcode for GameObjects is a Unity package that allows you
+        to create multiplayer games using the GameObjects paradigm.
+      RecommendedPackages:
+      - PackageId: com.unity.multiplayer.playmode
+        Type: 4
+        Reason: Multiplayer Play Mode will speed up your workflow, no matter the
+          netcode choice.
+      - PackageId: com.unity.multiplayer.tools
+        Type: 4
+        Reason: Multiplayer Tools will speed up your workflow, no matter the netcode
+          choice.
+    - Type: 1
+      Title: Netcode for Entities
+      MainPackageId: com.unity.netcode
+      DocUrl: 
+      ShortDescription: Netcode for Entities is a Unity package that allows you to
+        create multiplayer games using the ECS paradigm.
+      RecommendedPackages:
+      - PackageId: com.unity.multiplayer.playmode
+        Type: 4
+        Reason: Multiplayer Play Mode will speed up your workflow, no matter the
+          netcode choice.
+      - PackageId: com.unity.multiplayer.tools
+        Type: 6
+        Reason: Multiplayer Tools is only compatible with Netcode for GameObjects.
+    - Type: 5
+      Title: No Netcode
+      MainPackageId: 
+      DocUrl: 
+      ShortDescription: No real time synchronization of game data required.
+      RecommendedPackages:
+      - PackageId: com.unity.multiplayer.playmode
+        Type: 4
+        Reason: Multiplayer Play Mode is not useful without a netcode solution.
+      - PackageId: com.unity.multiplayer.tools
+        Type: 6
+        Reason: Multiplayer Tools is only compatible with Netcode for GameObjects.
+    - Type: 4
+      Title: Custom Netcode (with Unity Transport)
+      MainPackageId: com.unity.transport
+      DocUrl: 
+      ShortDescription: Use the Unity network transport layer as the low-level interface
+        for connecting and sending data through a network for your custom netcode
+        solution.
+      RecommendedPackages:
+      - PackageId: com.unity.multiplayer.playmode
+        Type: 4
+        Reason: Multiplayer Play Mode will speed up your workflow, no matter the
+          netcode choice.
+      - PackageId: com.unity.multiplayer.tools
+        Type: 6
+        Reason: Multiplayer Tools is only compatible with Netcode for GameObjects.
+    Packages:
+    - Id: com.unity.services.vivox
+      Name: Voice/Text chat (Vivox)
+      ShortDescription: Vivox is a Unity service that allows you to add voice and
+        text chat to your game.
+      DocsUrl: https://docs.unity.com/ugs/en-us/manual/vivox-unity/manual/Unity/Unity
+      AdditionalPackages: []
+    - Id: com.unity.services.multiplayer
+      Name: Multiplayer Services
+      ShortDescription: The Multiplayer Services package allows you to create and
+        handle Sessions in order to connect players via Lobbies, Matchmaking, Multiplay
+        Hosting and Relay.
+      DocsUrl: 
+      AdditionalPackages: []
+    - Id: com.unity.multiplayer.widgets
+      Name: Multiplayer Widgets
+      ShortDescription: The Multiplayer Widgets package provides a set of widgets
+        that help implementing Unity's multiplayer services in a rapid prototyping
+        fashion.
+      DocsUrl: 
+      AdditionalPackages: []
+    - Id: com.unity.netcode
+      Name: Netcode for Entities
+      ShortDescription: Netcode for Entities is a Unity package that allows you to
+        create multiplayer games using the ECS paradigm.
+      DocsUrl: https://docs.unity3d.com/Packages/com.unity.netcode@latest
+      AdditionalPackages: []
+    - Id: com.unity.netcode.gameobjects
+      Name: Netcode for GameObjects
+      ShortDescription: Netcode for GameObjects is a Unity package that allows you
+        to create multiplayer games using the GameObjects paradigm.
+      DocsUrl: https://docs-multiplayer.unity3d.com/netcode/current/about/
+      AdditionalPackages: []
+    - Id: com.unity.multiplayer.tools
+      Name: Multiplayer Tools
+      ShortDescription: Multiplayer Tools is a Unity package that allows you to analyze,
+        debug, and test your multiplayer game.
+      DocsUrl: https://docs-multiplayer.unity3d.com/tools/current/about/
+      AdditionalPackages: []
+    - Id: com.unity.multiplayer.playmode
+      Name: Multiplayer Play Mode
+      ShortDescription: Multiplayer Play Mode is a Unity package that allows you
+        to test your game with several windows in the Editor, without building multiple
+        Players.
+      DocsUrl: https://docs-multiplayer.unity3d.com/mppm/current/about/
+      AdditionalPackages: []
+    - Id: com.unity.services.cloudcode
+      Name: Cloud Code
+      ShortDescription: Run your game logic in the cloud as serverless functions
+        and interact with other backend services.
+      DocsUrl: https://docs.unity.com/ugs/manual/cloud-code/manual
+      AdditionalPackages:
+      - com.unity.services.deployment
+    - Id: com.unity.transport
+      Name: Custom Netcode (with Unity Transport)
+      ShortDescription: Use the Unity network transport layer as the low-level interface
+        for connecting and sending data through a network for your custom netcode
+        solution.
+      DocsUrl: https://docs.unity3d.com/Packages/com.unity.transport@latest
+      AdditionalPackages: []
+    - Id: com.unity.dedicated-server
+      Name: Dedicated Server Package
+      ShortDescription: The Dedicated Server package contains optimizations and workflow
+        improvements for developing Dedicated Server platform.
+      DocsUrl: https://docs.unity3d.com/Packages/com.unity.dedicated-server@latest
+      AdditionalPackages: []
+    - Id: com.unity.services.deployment
+      Name: Deployment Package
+      ShortDescription: Not shown in UI - Will be bundled with Cloud Code
+      DocsUrl: 
+      AdditionalPackages: []

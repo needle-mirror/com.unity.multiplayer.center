@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Unity.Multiplayer.Center.UI.RecommendationView
+namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
 {
     internal static class RecommendationInfoPopupSingleton
     {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
+using UnityEngine;
 
 namespace Unity.Multiplayer.Center.Recommendations
 {
@@ -21,16 +22,18 @@ namespace Unity.Multiplayer.Center.Recommendations
     /// </summary>
     internal class Scoring
     {
+        public const string DynamicKeyword = "[dynamic]";
+        
+        string m_PrimaryDescription = null;
+        
         List<ScoreWithReason> m_AllScores = new();
         public float TotalScore { get; private set; } = 0f;
-
-        public static Scoring CreateFromUniqueScore(float score, string reason)
-        {
-            var scoring = new Scoring();
-            scoring.AddScore(score, reason);
-            return scoring;
-        }
         
+        public Scoring(string primaryDescription)
+        {
+            m_PrimaryDescription = primaryDescription;
+        }
+
         public void AddScore(float score, string reason)
         {
             TotalScore += score;
@@ -61,13 +64,67 @@ namespace Unity.Multiplayer.Center.Recommendations
         
         string GetAllContributionsReasons()
         {
-            return String.Join("\n", m_AllScores.Select(s => s.Reason));
+            return string.IsNullOrEmpty(m_PrimaryDescription)? OneReasonPerLine() : CombineReasonsInOneSentence();
+        }
+        
+        string OneReasonPerLine()
+        {
+            var stringBuilder = new System.Text.StringBuilder();
+            foreach (var score in m_AllScores)
+            {
+                stringBuilder.AppendLine(score.Reason);
+            }
+            return stringBuilder.ToString();
         }
 
-        // Only max contribution
-        string GetMaxContributionReason()
+        string CombineReasonsInOneSentence()
         {
-            return m_AllScores.Count == 0 ? null : m_AllScores[0].Reason;
+            var length = m_AllScores.Count;
+            if(length == 0)
+                return RemoveSentenceWithDynamicKeyword(m_PrimaryDescription);
+
+            var explanation = length switch
+            {
+                1 => m_AllScores[0].Reason,
+                2 => $"{m_AllScores[0].Reason} and {m_AllScores[1].Reason}",
+                _ => Combine(m_AllScores)
+            };
+
+            return m_PrimaryDescription.Replace(DynamicKeyword, explanation);
+        }
+        
+        static string RemoveSentenceWithDynamicKeyword(string primaryDescription)
+        {
+            var sentences = primaryDescription.Split('.');
+            var sentencesWithoutKeyword = new StringBuilder(capacity:sentences.Length);
+            var index = 0;
+            foreach (var sentence in sentences)
+            {
+                if (!string.IsNullOrEmpty(sentence) && !sentence.Contains(DynamicKeyword))
+                {
+                    sentencesWithoutKeyword.Append(sentence);
+                    sentencesWithoutKeyword.Append(".");
+                    index++;
+                }
+            }
+
+            return sentencesWithoutKeyword.ToString();
+        }
+
+        static string Combine(List<ScoreWithReason> scores)
+        {
+            var stringBuilder = new System.Text.StringBuilder();
+            for(var i = 0; i < scores.Count -2; i++)
+            {
+                stringBuilder.Append(scores[i].Reason);
+                stringBuilder.Append(", ");
+            }
+
+            stringBuilder.Append(scores[^2].Reason);
+            stringBuilder.Append(" and ");
+            stringBuilder.Append(scores[^1].Reason);
+            
+            return stringBuilder.ToString();
         }
     }
 }

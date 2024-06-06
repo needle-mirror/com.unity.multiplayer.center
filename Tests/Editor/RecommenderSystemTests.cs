@@ -5,7 +5,7 @@ using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Questionnaire;
 using Unity.Multiplayer.Center.Recommendations;
 
-namespace Unity.MultiplayerCenterTests.Recommendations
+namespace Unity.MultiplayerCenterTests
 {
     /// <summary>
     /// Basic test for the recommender system, without checking that the recommendation itself make sense.
@@ -55,17 +55,22 @@ namespace Unity.MultiplayerCenterTests.Recommendations
 
             foreach (var solution in recommendation.NetcodeOptions)
             {
-                if (solution.Title == k_NoNetcodeTitle) continue;
+                if (solution.Solution is PossibleSolution.CustomNetcode or PossibleSolution.NoNetcode) continue;
 
                 RecommendationTestsUtils.AssertRecommendedSolutionNotNull(solution);
-                RecommendationTestsUtils.AssertAllRecommendedPackageNotNull(solution);
             }
 
             foreach (var solution in recommendation.ServerArchitectureOptions)
             {
                 RecommendationTestsUtils.AssertRecommendedSolutionNotNull(solution, false);
-                RecommendationTestsUtils.AssertAllRecommendedPackageNotNull(solution);
             }
+        }
+
+        [Test]
+        public void TestSolutionToPackageViewData_NothingNull()
+        {
+            var allPackages = RecommenderSystem.GetSolutionsToRecommendedPackageViewData();
+            RecommendationTestsUtils.AssertAllRecommendedPackageNotNull(allPackages);
         }
 
         [Test]
@@ -82,25 +87,67 @@ namespace Unity.MultiplayerCenterTests.Recommendations
         }
 
         [Test]
-        public void TestGetRecommendationForMatchingAnswers_FeaturesAreNotIncoherent()
+        public void TestGetSolutionsToRecommendedPackageViewData_AllSelectionsHaveSameCount()
         {
-            var questionnaireData = RecommendationTestsUtils.GetProjectQuestionnaire();
-            var answerData = RecommendationTestsUtils.BuildAnswerMatching(questionnaireData);
-            var recommendation = RecommenderSystem.GetRecommendation(questionnaireData, answerData);
-
-            AssertNoNetcodeIsTheLastNetcodeRecommendation(recommendation);
+            var allPackages = RecommenderSystem.GetSolutionsToRecommendedPackageViewData();
             
-            // Note: this check fits current requirements, but this might change
-            for (var i = 1; i < recommendation.NetcodeOptions.Length; i++)
-                RecommendationTestsUtils.AssertSamePackagesWithDifferentRecommendations(recommendation.NetcodeOptions[0],
-                    recommendation.NetcodeOptions[i]);
-
-            // Note: server architecture options are not required to have the same recommendations but they should have the same number of packages
-            for (var i = 1; i < recommendation.ServerArchitectureOptions.Length; i++)
-                RecommendationTestsUtils.AssertRecommendationsHaveSameNumberOfPackages(
-                    recommendation.ServerArchitectureOptions[0], recommendation.ServerArchitectureOptions[i]);
+            var expectedCount = 16; // 4 netcode options * 4 hosting options
+            Assert.AreEqual(expectedCount, allPackages.Selections.Length);
+            
+            PossibleSolution[] netcodeSolutions = {PossibleSolution.NGO, PossibleSolution.N4E, PossibleSolution.CustomNetcode, PossibleSolution.NoNetcode};
+            PossibleSolution[] hostingSolutions = {PossibleSolution.LS, PossibleSolution.DS, PossibleSolution.CloudCode, PossibleSolution.DA};
+            
+            var referencePackageCount = allPackages.GetPackagesForSelection(PossibleSolution.NGO, PossibleSolution.LS).Length;
+            Assert.True(referencePackageCount > 0);
+            
+            foreach (var netcode in netcodeSolutions)
+            {
+                foreach (var hosting in hostingSolutions)
+                {
+                    var packages = allPackages.GetPackagesForSelection(netcode, hosting);
+                    Assert.NotNull(packages);
+                    Assert.AreEqual(referencePackageCount, packages.Length);
+                }
+            }
         }
 
+        [TestCase(PossibleSolution.DS)]
+        [TestCase(PossibleSolution.LS)]
+        [TestCase(PossibleSolution.DA)]
+        [TestCase(PossibleSolution.CloudCode)]
+        public void RecommendationData_AllHostingOverridesExistInNetcodeData(PossibleSolution hostingModel)
+        {
+            var data = RecommenderSystemDataObject.instance.RecommenderSystemData;
+            var hostingOverrides = data.SolutionsByType[hostingModel].RecommendedPackages;
+            var netcodePackages = data.SolutionsByType[PossibleSolution.NGO].RecommendedPackages;
+            
+            foreach (var package in hostingOverrides)
+            {
+                var index = Array.FindIndex(netcodePackages, p => p.PackageId == package.PackageId);
+                Assert.True(index > -1, $"Did not find package {package.PackageId} in Netcode packages for {hostingModel}");
+            }   
+        }
+
+        [TestCase(PossibleSolution.NGO)]
+        [TestCase(PossibleSolution.N4E)]
+        [TestCase(PossibleSolution.CustomNetcode)]
+        [TestCase(PossibleSolution.NoNetcode)]
+        public void RecommendationData_NetcodeSolutionsHaveRecommendationDataForAllPackages(PossibleSolution netcode)
+        {
+            var data = RecommenderSystemDataObject.instance.RecommenderSystemData;
+            var packagesForNetcode = data.SolutionsByType[netcode].RecommendedPackages;
+            var solutionPackages = data.RecommendedSolutions.Where(e => e.MainPackageId != null).Select(e => e.MainPackageId).ToArray();
+            
+            foreach (var package in data.Packages)
+            {
+                if(solutionPackages.Contains(package.Id))
+                    continue;
+                
+                var index = Array.FindIndex(packagesForNetcode, p => p.PackageId == package.Id);
+                Assert.True(index > -1, $"Did not find package {package.Id} in packages of {netcode}");
+            }
+        }
+        
         static void AssertNoNetcodeIsTheLastNetcodeRecommendation(RecommendationViewData recommendation)
         {
             var netcodeSolutionCount = recommendation.NetcodeOptions.Length;

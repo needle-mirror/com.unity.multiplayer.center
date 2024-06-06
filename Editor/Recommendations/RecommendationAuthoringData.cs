@@ -17,32 +17,34 @@ namespace Unity.Multiplayer.Center.Recommendations
         public const string MultiplayerToolsId = "com.unity.multiplayer.tools";
         public const string MultiplayerPlayModeId = "com.unity.multiplayer.playmode";
         public const string CloudCodeId = "com.unity.services.cloudcode";
-        public const string CustomNetcodeId = "com.unity.transport";
+        public const string TransportId = "com.unity.transport";
         public const string DeploymentPackageId = "com.unity.services.deployment";
         public const string DedicatedServerPackageId = "com.unity.dedicated-server";
+        public const string EntitiesGraphics = "com.unity.entities.graphics";
     }
     internal static class Reasons
     {
-        public const string MultiplayerPlayModeRecommended = "Multiplayer Play Mode will speed up your workflow, no matter the netcode choice.";
-        public const string MultiplayerPlayModeNotRecommended = "Multiplayer Play Mode is not useful without a netcode solution.";
-        public const string VivoxRecommended = "Adding real-time communication is always recommended to engage your users.";
-        public const string MultiplayerToolsRecommended = "Multiplayer Tools will speed up your workflow, no matter the netcode choice.";
+        public const string MultiplayerPlayModeRecommended = "Multiplayer Play Mode enables you to iterate faster by testing locally without the need to create builds.";
+        public const string VivoxRecommended = "Vivox adds real-time communication and is always recommended to boost players engagement.";
+        public const string MultiplayerToolsRecommended = "Tools speed up your development workflow for games using Netcode for GameObjects.";
         public const string MultiplayerToolsIncompatible = "Multiplayer Tools is only compatible with Netcode for GameObjects.";
-        public const string CloudCodeNotRecommended = "Cloud Code is not recommended for real-time multiplayer games.";
-        public const string CloudCodeRecommended = "Cloud Code is recommended for asynchronous games.";
-        public const string MultiplayerSdkRecommendedClientHosted = "The Multiplayer Services Sessions are typically used with a client hosted game.";
-        public const string MultiplayerSdkRecommendedDedicatedServer = "The Multiplayer Services package's Multiplay Hosting and Matchmaking are Unity services that allow you to host your dedicated server in the cloud and connect players.";
-        public const string MultiplayerSdkNotRecommendedCloudCode = "The Multiplayer Services package is not recommended when using Cloud Code.";
-        public const string MultiplayerWidgetsRecommendedClientHosted = "The Multiplayer Widgets package helps with the rapid prototyping of the Multiplayer Services Session features.";
-        public const string MultiplayerWidgetsNotRecommendedCloudCode = "The Multiplayer Widgets package is not recommended when using Cloud Code.";
-        public const string DedicatedServerPackageRecommended = "The Dedicated Server package helps with the development for the dedicated server platform.";
+        public const string MultiplayerSdkRecommended = "The Multiplayer Services package makes it easy to connect players together using Unity Gaming Services.";
+        public const string MultiplayerSdkRecommendedNoNetcode = "The Multiplayer Services package makes it easy to connect players together using Unity Gaming Services. This can also be useful in a no-netcode context.";
+        public const string MultiplayerWidgetsRecommended = "Widgets provide pre-implemented building blocks to help you connect players together using services as fast as possible.";
+        public const string MultiplayerWidgetsNotRecommendedBecauseWrongNetcode = "The Multiplayer Widgets package is currently only compatibe with Netcode for GameObjects.";
+        public const string DedicatedServerPackageRecommended = "The Dedicated Server package, which includes Content Selection, helps with the development for the dedicated server platforms.";
         public const string DedicatedServerPackageNotRecommended = "The Dedicated Server package is only useful when you have a dedicated server architecture and use Netcode for Gameobjects.";
         public const string DedicatedServerPackageNotRecommendedN4E = "The Dedicated Server package is currently not compatible when using Netcode for Entities.";
+        public const string DistributedAuthorityIncompatible = "Distributed Authority is only available when using Netcode for GameObjects.";
+        public const string DistributedAuthorityNotAvailable = "Distributed Authority is not available yet.";
+        public const string EntitiesGraphicsRecommended = "While you do not need Entities Graphics to use Netcode for Entities, it will make it easier for you to get started";
+        public const string EntitiesGraphicsNotRecommended = "You would typically only use Entities Graphics with Netcode for Entities";
+        public const string TransportRecommended = "Unity Transport is the low-level interface for connecting and sending data through a network, and can be the basis of your custom netcode solution.";
+        public const string DeploymentRecommended = "The deployment package is necessary to upload your C# Cloud Code scripts.";
     }
     
     internal static class DocLinks
     {
-        public const string NetworkTopology = "https://docs-multiplayer.unity3d.com/netcode/current/terms-concepts/network-topologies/";
         public const string DedicatedServer = "https://docs-multiplayer.unity3d.com/netcode/current/terms-concepts/network-topologies/#dedicated-game-server";
         public const string ListenServer = "https://docs-multiplayer.unity3d.com/netcode/current/terms-concepts/network-topologies/#client-hosted-listen-server";
         public const string NetcodeForGameObjects = "https://docs-multiplayer.unity3d.com/netcode/current/about/";
@@ -50,34 +52,46 @@ namespace Unity.Multiplayer.Center.Recommendations
         public const string Vivox = "https://docs.unity.com/ugs/en-us/manual/vivox-unity/manual/Unity/Unity";
         public const string MultiplayerTools = "https://docs-multiplayer.unity3d.com/tools/current/about/";
         public const string MultiplayerPlayMode = "https://docs-multiplayer.unity3d.com/mppm/current/about/";
-        public const string MultiplayerSdk = null;
+        public const string MultiplayerSdk = "https://docs.unity3d.com/Packages/com.unity.services.multiplayer@latest";
         public const string MultiplayerWidgets = null;
         public const string CloudCode = "https://docs.unity.com/ugs/manual/cloud-code/manual";
-        public const string CustomNetcode = "https://docs.unity3d.com/Packages/com.unity.transport@latest";
+        public const string Transport = "https://docs.unity3d.com/Packages/com.unity.transport@latest";
         public const string DedicatedServerPackage = "https://docs.unity3d.com/Packages/com.unity.dedicated-server@latest";
+        public const string DistributedAuthority = "https://docs-multiplayer.unity3d.com/netcode/current/terms-concepts/distributed-authority/";
+        public const string EntitiesGraphics = "https://docs.unity3d.com/Packages/com.unity.entities.graphics@latest";
+        public const string DeploymentPackage = "https://docs.unity3d.com/Packages/com.unity.services.deployment@latest";
+    }
+
+    internal static class SolutionDescriptionAndReason
+    {
+        public const string DistributedAuthority = "The authority over the game will be distributed across different players. This hosting model [dynamic].";
+        public const string DedicatedServer = "A dedicated server has authority over the game logic. This hosting model [dynamic].";
+        public const string ListenServer = "A player will be the host of your game. This hosting model [dynamic].";
+        public const string NetcodeForGameObjects = "Netcode for GameObject is a high-level networking library built for GameObjects to abstract networking logic. It is made for simplicity. It [dynamic].";
+        public const string NetcodeForEntities = "Netcode for Entities is a multiplayer solution with server authority and client prediction. It is made for performance. It [dynamic].";
+        public const string CloudCode = "When gameplay does not require a synchronous multiplayer experience, Cloud Code allows to run player interaction logic directly on the backend side. It [dynamic].";
+        public const string CustomNetcode = "Custom or third-party netcode, not provided by Unity. It [dynamic].";
+        public const string NoNetcode = "Your game doesn't require realtime synchronization. No Netcode [dynamic].";
     }
     
-    internal static class ShortDescriptions
+    internal static class CatchPhrases
     {
-        public const string NetworkTopology = "Network topology is the way in which your game is connected to the network. It is generally a dedicated server or a listen server architecture.";
-        public const string DedicatedServer = "You will have to deploy a dedicated server to have the authority on your game logic.";
-        public const string ListenServer = "A player will be the host of your game. You will not need to deploy a dedicated server to have the authority on your game logic. This is also called a Listen Server Architecture.";
-        public const string NetcodeForGameObjects = "Netcode for GameObjects is a Unity package that allows you to create multiplayer games using the GameObjects paradigm.";
-        public const string NetcodeForEntities = "Netcode for Entities is a Unity package that allows you to create multiplayer games using the ECS paradigm.";
-        public const string Vivox = "Vivox is a Unity service that allows you to add voice and text chat to your game.";
-        public const string MultiplayerTools = "Multiplayer Tools is a Unity package that allows you to analyze, debug, and test your multiplayer game.";
-        public const string MultiplayerPlayMode = "Multiplayer Play Mode is a Unity package that allows you to test your game with several windows in the Editor, without building multiple Players.";
-        public const string MultiplayerSdk = "The Multiplayer Services package allows you to create and handle Sessions in order to connect players via Lobbies, Matchmaking, Multiplay Hosting and Relay.";
-        public const string MultiplayerWidgets = "The Multiplayer Widgets package provides a set of widgets that help implementing Unity's multiplayer services in a rapid prototyping fashion.";
-        public const string DedicatedServerPackage = "The Dedicated Server package contains optimizations and workflow improvements for developing Dedicated Server platform.";
-        public const string CloudCode = "Run your game logic in the cloud as serverless functions and interact with other backend services.";
-        public const string CustomNetcode = "Use the Unity network transport layer as the low-level interface for connecting and sending data through a network for your custom netcode solution.";
-        public const string NoNetcode = "No real time synchronization of game data required.";
+        public const string NetcodeForGameObjects = "Multiplayer synchronization for gameplay based on GameObjects.";
+        public const string NetcodeForEntities = "Multiplayer synchronization for gameplay based on Entity Component System.";
+        public const string Vivox = "Connect players through voice and text chat.";
+        public const string MultiplayerTools = "Debug and optimize your multiplayer gameplay.";
+        public const string MultiplayerPlayMode = "Test multiplayer gameplay in separated processes from the same project.";
+        public const string MultiplayerSdk = "Connect players together in sessions for lobby, matchmaker, etc.";
+        public const string MultiplayerWidgets = "Experiment rapidly with multiplayer services.";
+        public const string DedicatedServerPackage = "Streamline dedicated server builds.";
+        public const string CloudCode = "Run game logic as serverless functions.";
+        public const string EntitiesGraphics = "Optimized rendering for Entity Component System.";
+        public const string DeploymentPackage = "Deploy assets to Unity Gaming Services from the Editor.";
+        public const string Transport = "Low-level networking communication layer.";
     }
 
     internal static class Titles
     {
-        public const string NetworkTopology = "Network topology";
         public const string DedicatedServer = "Dedicated Server";
         public const string ListenServer = "Client Hosted";
         public const string NetcodeForGameObjects = "Netcode for GameObjects";
@@ -89,9 +103,12 @@ namespace Unity.Multiplayer.Center.Recommendations
         public const string MultiplayerSdk = "Multiplayer Services";
         public const string MultiplayerWidgets = "Multiplayer Widgets";
         public const string CloudCode = "Cloud Code";
-        public const string CustomNetcode = "Custom Netcode (with Unity Transport)";
+        public const string CustomNetcode = "Custom or Third-party Netcode";
+        public const string Transport = "Transport";
         public const string DedicatedServerPackage = "Dedicated Server Package";
         public const string DeploymentPackage = "Deployment Package";
+        public const string EntitiesGraphics = "Entities Graphics";
+        public const string DistributedAuthority = "Distributed Authority";
     }
 
     static class RecommendationAssetUtils
@@ -107,13 +124,10 @@ namespace Unity.Multiplayer.Center.Recommendations
                     Type = PossibleSolution.LS,
                     Title = Titles.ListenServer,
                     DocUrl = DocLinks.ListenServer,
-                    ShortDescription = ShortDescriptions.ListenServer,
+                    ShortDescription = SolutionDescriptionAndReason.ListenServer,
                     RecommendedPackages = new RecommendedPackage[]
                     {
-                        new(Packages.VivoxId, RecommendationType.OptionalFeatured, Reasons.VivoxRecommended),
-                        new(Packages.MultiplayerSdkId, RecommendationType.OptionalStandard, Reasons.MultiplayerSdkRecommendedClientHosted),
-                        new(Packages.DedicatedServerPackageId, RecommendationType.NotRecommended, Reasons.DedicatedServerPackageNotRecommended),
-                        new(Packages.MultiplayerWidgetsId, RecommendationType.OptionalStandard, Reasons.MultiplayerWidgetsRecommendedClientHosted),
+                        new(Packages.DedicatedServerPackageId, RecommendationType.Incompatible, Reasons.DedicatedServerPackageNotRecommended),
                     }
                 },
                 new()
@@ -121,29 +135,36 @@ namespace Unity.Multiplayer.Center.Recommendations
                     Type = PossibleSolution.DS,
                     Title = Titles.DedicatedServer,
                     DocUrl = DocLinks.DedicatedServer,
-                    ShortDescription = ShortDescriptions.DedicatedServer,
+                    ShortDescription = SolutionDescriptionAndReason.DedicatedServer,
                     RecommendedPackages = new RecommendedPackage[]
                     {
-                        new(Packages.VivoxId, RecommendationType.OptionalFeatured, Reasons.VivoxRecommended),
-                        new(Packages.MultiplayerSdkId, RecommendationType.OptionalStandard, Reasons.MultiplayerSdkRecommendedDedicatedServer),
-                        new(Packages.DedicatedServerPackageId, RecommendationType.OptionalFeatured, Reasons.DedicatedServerPackageRecommended),
-                        new(Packages.MultiplayerWidgetsId, RecommendationType.OptionalStandard, Reasons.MultiplayerWidgetsRecommendedClientHosted),
                     }
                 },
+                
+                new()
+                {
+                    Type = PossibleSolution.DA,
+                    Title = Titles.DistributedAuthority,
+                    DocUrl = DocLinks.DistributedAuthority,
+                    ShortDescription = SolutionDescriptionAndReason.DistributedAuthority,
+                    RecommendedPackages = new RecommendedPackage[]
+                    { //todo
+                        new(Packages.DedicatedServerPackageId, RecommendationType.Incompatible, Reasons.DedicatedServerPackageNotRecommended),
+                    }
+                },
+                
                 new()
                 {
                     Type = PossibleSolution.CloudCode,
                     Title = Titles.CloudCode,
                     MainPackageId = Packages.CloudCodeId,
-                    ShortDescription = ShortDescriptions.CloudCode,
+                    ShortDescription = SolutionDescriptionAndReason.CloudCode,
                     DocUrl = DocLinks.CloudCode,
                     
                     RecommendedPackages = new RecommendedPackage[]
                     {
-                        new(Packages.VivoxId, RecommendationType.OptionalFeatured, Reasons.VivoxRecommended),
-                        new(Packages.MultiplayerSdkId, RecommendationType.NotRecommended, Reasons.MultiplayerSdkNotRecommendedCloudCode),
-                        new(Packages.DedicatedServerPackageId, RecommendationType.NotRecommended, Reasons.DedicatedServerPackageNotRecommended),
-                        new(Packages.MultiplayerWidgetsId, RecommendationType.NotRecommended, Reasons.MultiplayerWidgetsNotRecommendedCloudCode),
+                        new(Packages.DedicatedServerPackageId, RecommendationType.Incompatible, Reasons.DedicatedServerPackageNotRecommended),
+                        new(Packages.DeploymentPackageId, RecommendationType.HostingFeatured, Reasons.DeploymentRecommended),
                     }
                 },
                 new()
@@ -151,24 +172,40 @@ namespace Unity.Multiplayer.Center.Recommendations
                     Type = PossibleSolution.NGO,
                     Title = Titles.NetcodeForGameObjects,
                     MainPackageId = Packages.NetcodeGameObjectsId,
-                    ShortDescription = ShortDescriptions.NetcodeForGameObjects,
+                    ShortDescription = SolutionDescriptionAndReason.NetcodeForGameObjects,
                     RecommendedPackages = new RecommendedPackage[]
                     {
+                        new(Packages.TransportId, RecommendationType.Hidden, null),
+                        new(Packages.DeploymentPackageId, RecommendationType.Hidden, null),
+                        new(Packages.MultiplayerToolsId, RecommendationType.NetcodeFeatured, Reasons.MultiplayerToolsRecommended),
+                        new(Packages.DedicatedServerPackageId, RecommendationType.HostingFeatured, Reasons.DedicatedServerPackageRecommended  ),
+                        new(Packages.EntitiesGraphics, RecommendationType.Hidden, Reasons.EntitiesGraphicsNotRecommended),
+                        new(Packages.VivoxId, RecommendationType.OptionalStandard, Reasons.VivoxRecommended),
+                        new(Packages.MultiplayerSdkId, RecommendationType.OptionalStandard, Reasons.MultiplayerSdkRecommended),
+                        new(Packages.MultiplayerWidgetsId, RecommendationType.OptionalStandard, Reasons.MultiplayerWidgetsRecommended),
                         new(Packages.MultiplayerPlayModeId, RecommendationType.OptionalStandard, Reasons.MultiplayerPlayModeRecommended),
-                        new(Packages.MultiplayerToolsId, RecommendationType.OptionalStandard, Reasons.MultiplayerToolsRecommended)
-                    }
+                    },
+                    IncompatibleSolutions = new IncompatibleSolution[]{new(PossibleSolution.DA, Reasons.DistributedAuthorityNotAvailable)}
                 },
                 new()
                 {
                     Type = PossibleSolution.N4E,
                     Title = Titles.NetcodeForEntities,
                     MainPackageId = Packages.NetcodeForEntitiesId,
-                    ShortDescription = ShortDescriptions.NetcodeForEntities,
+                    ShortDescription = SolutionDescriptionAndReason.NetcodeForEntities,
                     RecommendedPackages = new RecommendedPackage[]
                     {
+                        new(Packages.TransportId, RecommendationType.Hidden, null),
+                        new(Packages.DeploymentPackageId, RecommendationType.Hidden, null),
+                        new(Packages.EntitiesGraphics, RecommendationType.NetcodeFeatured, Reasons.EntitiesGraphicsRecommended),
+                        new(Packages.VivoxId, RecommendationType.OptionalStandard, Reasons.VivoxRecommended),
+                        new(Packages.MultiplayerSdkId, RecommendationType.OptionalStandard, Reasons.MultiplayerSdkRecommended),
+                        new(Packages.MultiplayerWidgetsId, RecommendationType.Incompatible, Reasons.MultiplayerWidgetsNotRecommendedBecauseWrongNetcode),
+                        new(Packages.MultiplayerToolsId, RecommendationType.Incompatible, Reasons.MultiplayerToolsIncompatible),
                         new(Packages.MultiplayerPlayModeId, RecommendationType.OptionalStandard, Reasons.MultiplayerPlayModeRecommended),
-                        new(Packages.MultiplayerToolsId, RecommendationType.Incompatible, Reasons.MultiplayerToolsIncompatible)
-                    }
+                        new(Packages.DedicatedServerPackageId, RecommendationType.Incompatible, Reasons.DedicatedServerPackageNotRecommended)
+                    },
+                    IncompatibleSolutions = new IncompatibleSolution[]{new(PossibleSolution.DA, Reasons.DistributedAuthorityIncompatible)}
                 },
                 new()
                 {
@@ -176,44 +213,60 @@ namespace Unity.Multiplayer.Center.Recommendations
                     Title = Titles.NoUnityNetcode,
                     DocUrl = null,
                     MainPackageId = null,
-                    ShortDescription = ShortDescriptions.NoNetcode,
+                    ShortDescription = SolutionDescriptionAndReason.NoNetcode,
                     RecommendedPackages = new RecommendedPackage[]
                     {
-                        new(Packages.MultiplayerPlayModeId, RecommendationType.OptionalStandard, Reasons.MultiplayerPlayModeNotRecommended),
-                        new(Packages.MultiplayerToolsId, RecommendationType.Incompatible, Reasons.MultiplayerToolsIncompatible)
-                    }
+                        new(Packages.TransportId, RecommendationType.Hidden, null),
+                        new(Packages.DeploymentPackageId, RecommendationType.Hidden, null),
+                        new(Packages.MultiplayerToolsId, RecommendationType.Incompatible, Reasons.MultiplayerToolsIncompatible),
+                        new(Packages.EntitiesGraphics, RecommendationType.Hidden, Reasons.EntitiesGraphicsNotRecommended),
+                        new(Packages.VivoxId, RecommendationType.OptionalStandard, Reasons.VivoxRecommended),
+                        new(Packages.MultiplayerSdkId, RecommendationType.OptionalStandard, Reasons.MultiplayerSdkRecommendedNoNetcode),
+                        new(Packages.MultiplayerWidgetsId, RecommendationType.Incompatible, Reasons.MultiplayerWidgetsNotRecommendedBecauseWrongNetcode),
+                        new(Packages.MultiplayerPlayModeId, RecommendationType.OptionalStandard, Reasons.MultiplayerPlayModeRecommended),
+                        new(Packages.DedicatedServerPackageId, RecommendationType.Incompatible, Reasons.DedicatedServerPackageNotRecommended),
+                    },
+                    IncompatibleSolutions = new IncompatibleSolution[]{new(PossibleSolution.DA, Reasons.DistributedAuthorityIncompatible)}
                 },
                 new()
                 {
                     Type = PossibleSolution.CustomNetcode,
                     Title = Titles.CustomNetcode,
-                    MainPackageId = Packages.CustomNetcodeId,
-                    ShortDescription = ShortDescriptions.CustomNetcode,
+                    MainPackageId = null,
+                    ShortDescription = SolutionDescriptionAndReason.CustomNetcode,
                     RecommendedPackages = new RecommendedPackage[]
                     {
+                        new(Packages.TransportId, RecommendationType.NetcodeFeatured, Reasons.TransportRecommended),
+                        new(Packages.EntitiesGraphics, RecommendationType.Hidden, Reasons.EntitiesGraphicsNotRecommended),
+                        new(Packages.DeploymentPackageId, RecommendationType.Hidden, null),
+                        new(Packages.VivoxId, RecommendationType.OptionalStandard, Reasons.VivoxRecommended),
+                        new(Packages.MultiplayerSdkId, RecommendationType.OptionalStandard, Reasons.MultiplayerSdkRecommended),
+                        new(Packages.MultiplayerWidgetsId, RecommendationType.Incompatible, Reasons.MultiplayerWidgetsNotRecommendedBecauseWrongNetcode),
+                        new(Packages.MultiplayerToolsId, RecommendationType.Incompatible, Reasons.MultiplayerToolsIncompatible),
                         new(Packages.MultiplayerPlayModeId, RecommendationType.OptionalStandard, Reasons.MultiplayerPlayModeRecommended),
-                        new(Packages.MultiplayerToolsId, RecommendationType.Incompatible, Reasons.MultiplayerToolsIncompatible)
-                    }
+                        new(Packages.DedicatedServerPackageId, RecommendationType.Incompatible, Reasons.DedicatedServerPackageNotRecommendedN4E),
+                    },
+                    IncompatibleSolutions = new IncompatibleSolution[]{new(PossibleSolution.DA, Reasons.DistributedAuthorityIncompatible)}
                 }
             };
             data.Packages = new PackageDetails[]
             {
-                new(Packages.VivoxId, Titles.Vivox, ShortDescriptions.Vivox, DocLinks.Vivox),
-                new(Packages.MultiplayerSdkId, Titles.MultiplayerSdk, ShortDescriptions.MultiplayerSdk, DocLinks.MultiplayerSdk),
-                new(Packages.MultiplayerWidgetsId, Titles.MultiplayerWidgets, ShortDescriptions.MultiplayerWidgets, DocLinks.MultiplayerWidgets),
-                new(Packages.NetcodeForEntitiesId, Titles.NetcodeForEntities, ShortDescriptions.NetcodeForEntities, DocLinks.NetcodeForEntities),
-                new(Packages.NetcodeGameObjectsId, Titles.NetcodeForGameObjects, ShortDescriptions.NetcodeForGameObjects, DocLinks.NetcodeForGameObjects),
-                new(Packages.MultiplayerToolsId, Titles.MultiplayerTools, ShortDescriptions.MultiplayerTools, DocLinks.MultiplayerTools),
-                new(Packages.MultiplayerPlayModeId, Titles.MultiplayerPlayMode, ShortDescriptions.MultiplayerPlayMode, DocLinks.MultiplayerPlayMode),
-                new(Packages.CloudCodeId, Titles.CloudCode, ShortDescriptions.CloudCode, DocLinks.CloudCode, new string[]{Packages.DeploymentPackageId}),
-                new(Packages.CustomNetcodeId, Titles.CustomNetcode, ShortDescriptions.CustomNetcode, DocLinks.CustomNetcode),
-                new(Packages.DedicatedServerPackageId, Titles.DedicatedServerPackage, ShortDescriptions.DedicatedServerPackage, DocLinks.DedicatedServerPackage),
-                new(Packages.DeploymentPackageId, Titles.DeploymentPackage, "Not shown in UI - Will be bundled with Cloud Code", ""),
+                new(Packages.VivoxId, Titles.Vivox, CatchPhrases.Vivox, DocLinks.Vivox),
+                new(Packages.MultiplayerSdkId, Titles.MultiplayerSdk, CatchPhrases.MultiplayerSdk, DocLinks.MultiplayerSdk),
+                new(Packages.MultiplayerWidgetsId, Titles.MultiplayerWidgets, CatchPhrases.MultiplayerWidgets, DocLinks.MultiplayerWidgets),
+                new(Packages.NetcodeForEntitiesId, Titles.NetcodeForEntities, CatchPhrases.NetcodeForEntities, DocLinks.NetcodeForEntities),
+                new(Packages.NetcodeGameObjectsId, Titles.NetcodeForGameObjects, CatchPhrases.NetcodeForGameObjects, DocLinks.NetcodeForGameObjects),
+                new(Packages.MultiplayerToolsId, Titles.MultiplayerTools, CatchPhrases.MultiplayerTools, DocLinks.MultiplayerTools),
+                new(Packages.MultiplayerPlayModeId, Titles.MultiplayerPlayMode, CatchPhrases.MultiplayerPlayMode, DocLinks.MultiplayerPlayMode),
+                new(Packages.CloudCodeId, Titles.CloudCode, CatchPhrases.CloudCode, DocLinks.CloudCode),
+                new(Packages.TransportId, Titles.Transport, CatchPhrases.Transport, DocLinks.Transport),
+                new(Packages.DedicatedServerPackageId, Titles.DedicatedServerPackage, CatchPhrases.DedicatedServerPackage, DocLinks.DedicatedServerPackage),
+                new(Packages.EntitiesGraphics, Titles.EntitiesGraphics, CatchPhrases.EntitiesGraphics, DocLinks.EntitiesGraphics),
+                new(Packages.DeploymentPackageId, Titles.DeploymentPackage, CatchPhrases.DeploymentPackage, DocLinks.DeploymentPackage)
             };
 
             return data;
         }    
     }
-    
 }
 #endif

@@ -1,24 +1,30 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Questionnaire;
-using Unity.Multiplayer.Center.UI.RecommendationView;
 using Unity.Multiplayer.Center.Recommendations;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Unity.Multiplayer.Center.Window.UI
+namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
 {
     internal class RecommendationView
     {
         RecommendationViewData m_Recommendation;
+        SolutionsToRecommendedPackageViewData m_AllPackages;
 
         public RecommendationViewData CurrentRecommendation => m_Recommendation;
+        
+        public SolutionsToRecommendedPackageViewData AllPackages 
+            => m_AllPackages ??= RecommenderSystem.GetSolutionsToRecommendedPackageViewData();
+        
         public ScrollView Root { get; } = new();
 
-        NetcodeSection m_NetcodeSection = new();
-        ToolingSection m_ToolingSection = new();
-        InfrastructureSection m_InfrastructureSection = new();
+        NetcodeSelectionView m_NetcodeSelectionView = new();
+        HostingModelSelectionView m_HostingModelSelectionView = new();
+        RecommendedPackagesSection m_RecommendedPackagesSection = new();
+        OtherSection m_OtherSection = new();
         VisualElement m_NoRecommendationsView;
 
         VisualElement m_Content;
@@ -30,26 +36,126 @@ namespace Unity.Multiplayer.Center.Window.UI
         {
             Root.AddToClassList("recommendation-view");
             Root.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+            var title = new VisualElement();
+            title.Add(new Label() {text = "Multiplayer Solutions and Recommendations"});
+            title.AddToClassList("view-headline");
+            
             Root.Add(m_Content = new VisualElement() {name = "recommendation-view-section-container"});
-            m_Content.Add(m_NetcodeSection);
-            m_NetcodeSection.OnUserChangedNetcode += UpdateView;
-
-            m_Content.Add(m_ToolingSection);
-            m_ToolingSection.OnUserChangedTooling += UpdateView;
-            m_Content.Add(m_InfrastructureSection);
-            m_InfrastructureSection.OnUserChangedInfrastructure += UpdateView;
-
+            m_Content.Add(title);
+            var topContainer = new VisualElement();
+            topContainer.name = "main-sections-container";
+            topContainer.Add(m_NetcodeSelectionView);
+            topContainer.Add(m_HostingModelSelectionView);
+            m_Content.Add(topContainer);
+            
+            m_NetcodeSelectionView.OnUserChangedSolution += UpdateView;
+            m_HostingModelSelectionView.OnUserChangedSolution += UpdateView;
+            
+            m_RecommendedPackagesSection.OnPackageSelectionChanged += RaisePackageSelectionChanged;
+            m_HostingModelSelectionView.OnPackageSelectionChanged += RaisePackageSelectionChanged;
+            m_NetcodeSelectionView.OnPackageSelectionChanged += RaisePackageSelectionChanged;
+            
+            m_Content.Add(m_RecommendedPackagesSection);
+            m_Content.Add(m_OtherSection);
             m_NoRecommendationsView = EmptyView();
 
             Root.Add(m_NoRecommendationsView);
 
             UpdateView();
+            Undo.undoRedoPerformed += OnUndoRedoPerformed;
         }
 
         public void UpdateRecommendation(RecommendationViewData recommendation)
         {
             m_Recommendation = recommendation;
             UpdateView();
+        }
+
+        void OnUndoRedoPerformed()
+        {
+            var currentSelectedNetcode = UserChoicesObject.instance.SelectedSolutions.SelectedNetcodeSolution;
+            var currentSelectedHostingModel = UserChoicesObject.instance.SelectedSolutions.SelectedHostingModel;
+
+            // Update m_Recommendation based on the current state
+            foreach (var netcodeOption in m_Recommendation.NetcodeOptions)
+            {
+                netcodeOption.Selected = Logic.ConvertNetcodeSolution(netcodeOption) == currentSelectedNetcode;
+            }
+
+            foreach (var serverArchitectureOption in m_Recommendation.ServerArchitectureOptions)
+            {
+                serverArchitectureOption.Selected = Logic.ConvertInfrastructure(serverArchitectureOption) == currentSelectedHostingModel;
+            }
+
+            // Refresh the UI
+            UpdateView();
+        }
+
+        public void Clear()
+        {
+            m_NetcodeSelectionView.OnUserChangedSolution -= UpdateView;
+            m_HostingModelSelectionView.OnUserChangedSolution -= UpdateView;
+            m_RecommendedPackagesSection.OnPackageSelectionChanged -= RaisePackageSelectionChanged;
+            m_HostingModelSelectionView.OnPackageSelectionChanged -= RaisePackageSelectionChanged;
+            m_NetcodeSelectionView.OnPackageSelectionChanged -= RaisePackageSelectionChanged;
+            
+            Root.Clear();
+        }
+
+        void RaisePackageSelectionChanged()
+        {
+            OnPackageSelectionChanged?.Invoke();
+        }
+
+        void UpdateView()
+        {
+            var hideRecommendation = m_Recommendation == null;
+            SetRecommendationHidden(hideRecommendation);
+
+            if (hideRecommendation)
+            {
+                OnPackageSelectionChanged?.Invoke();
+                return;
+            }
+            
+            RecommenderSystem.AdaptRecommendationToNetcodeSelection(m_Recommendation);
+            var selectedNetcode = RecommendationUtils.GetSelectedNetcode(m_Recommendation);
+            var selectedHostingModel = RecommendationUtils.GetSelectedHostingModel(m_Recommendation);
+            var selection = new SolutionSelection(selectedNetcode.Solution, selectedHostingModel.Solution);
+            var allPackages = AllPackages.GetPackagesForSelection(selection).ToList(); 
+
+            // Debug(selection, allPackages);
+            m_NetcodeSelectionView.UpdateData(m_Recommendation.NetcodeOptions,
+                RecommendationUtils.FilterByType(allPackages, RecommendationType.NetcodeFeatured));
+            m_HostingModelSelectionView.UpdateData(m_Recommendation.ServerArchitectureOptions,
+                RecommendationUtils.FilterByType(allPackages, RecommendationType.HostingFeatured));
+            m_RecommendedPackagesSection.UpdatePackageData(
+                RecommendationUtils.FilterByType(allPackages, RecommendationType.OptionalStandard));
+            m_OtherSection.UpdatePackageData(
+                RecommendationUtils.FilterByType(allPackages, RecommendationType.Incompatible));
+            OnPackageSelectionChanged?.Invoke();
+            
+            UpdateUserInputObject(m_Recommendation);
+        }
+
+        static void Debug(SolutionSelection selection, List<RecommendedPackageViewData> allPackages)
+        {
+            UnityEngine.Debug.Log("/////////////////////////////////////// " + selection);
+            foreach (var pack in allPackages)
+            {
+                UnityEngine.Debug.Log(pack.Name + " " + pack.RecommendationType);
+            }
+        }
+
+        void SetRecommendationHidden(bool hideRecommendation)
+        {
+            var flex = new StyleEnum<DisplayStyle>(DisplayStyle.Flex);
+            var none = new StyleEnum<DisplayStyle>(DisplayStyle.None);
+            m_Content.style.display = hideRecommendation ? none : flex;
+            m_NoRecommendationsView.style.display = hideRecommendation ? flex : none;
+
+            // To show the EmptyView in the center, we have to change the behavior of the scroll view container.
+            Root.Q<VisualElement>("unity-content-container").style.flexGrow = hideRecommendation ? 1 : 0;
         }
 
         static void UpdateUserInputObject(RecommendationViewData recommendation)
@@ -67,45 +173,10 @@ namespace Unity.Multiplayer.Center.Window.UI
                 if (serverArchitectureOption.Selected)
                     selectedHostingModel = Logic.ConvertInfrastructure(serverArchitectureOption);
             }
-            
+            Undo.RecordObject(UserChoicesObject.instance,"Selection Change");
+
             UserChoicesObject.instance.SetUserSelection(selectedHostingModel, currentSelectedNetcode);
             UserChoicesObject.instance.Save();
-        }
-
-        public void UpdateView()
-        {
-            var flex = new StyleEnum<DisplayStyle>(DisplayStyle.Flex);
-            var none = new StyleEnum<DisplayStyle>(DisplayStyle.None);
-
-            var hideRecommendation = m_Recommendation == null;
-            m_Content.style.display = hideRecommendation ? none : flex;
-            m_NoRecommendationsView.style.display = hideRecommendation ? flex : none;
-
-            // To show the EmptyView in the center, we have to change the behavior of the scroll view container.
-            Root.Q<VisualElement>("unity-content-container").style.flexGrow = hideRecommendation ? 1 : 0;
-
-            if (hideRecommendation)
-            {
-                OnPackageSelectionChanged?.Invoke();
-                return;
-            }
-
-            var selectedNetcode = m_Recommendation.NetcodeOptions.First(sol => sol.Selected);
-           
-            m_NetcodeSection.UpdateData(m_Recommendation.NetcodeOptions);
-            m_ToolingSection.UpdateData(selectedNetcode);
-            m_InfrastructureSection.UpdateData(m_Recommendation.ServerArchitectureOptions, selectedNetcode);
-            OnPackageSelectionChanged?.Invoke();
-            
-            UpdateUserInputObject(m_Recommendation);
-        }
-
-        public void Clear()
-        {
-            m_NetcodeSection.OnUserChangedNetcode -= UpdateView;
-            m_ToolingSection.OnUserChangedTooling -= UpdateView;
-            m_InfrastructureSection.OnUserChangedInfrastructure -= UpdateView;
-            Root.Clear();
         }
 
         static VisualElement EmptyView()
@@ -117,7 +188,7 @@ namespace Unity.Multiplayer.Center.Window.UI
             emptyViewContentContainer.name = "empty-view-content";
             var emptyViewMessage = new Label
             {
-                text = "Answer the questionnaire so that we can recommend the right multiplayer setup for you.",
+                text = "You will see your recommendations and be able to explore Unity’s multiplayer offerings here once you specify the genre of your game, and the number of players per session.",
                 name = "empty-view-message"
             };
             var emptyViewIcon = new VisualElement();

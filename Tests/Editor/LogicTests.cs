@@ -2,10 +2,9 @@ using System;
 using NUnit.Framework;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Questionnaire;
-using Unity.MultiplayerCenterTests.Recommendations;
 using UnityEngine;
 
-namespace MultiplayerCenterTests
+namespace Unity.MultiplayerCenterTests
 {
     [TestFixture]
     class LogicTests
@@ -77,6 +76,21 @@ namespace MultiplayerCenterTests
             var newChosenPlayerCount = Int32.Parse(newAnsweredQuestion.Answers[0]);
             Assert.AreEqual(chosenPlayerCount, newChosenPlayerCount);
             Assert.NotNull(newReco);
+        }
+        
+        [TestCase("1.2", "1.3", true)]
+        [TestCase("3.2", "1.3", false)]
+        [TestCase("1.21", "1.2", false)]
+        [TestCase("1.2", "1.2", false)]
+        [TestCase("0.2", "1.3", true)]
+        [TestCase("1.3.12", "1.3.13", true)]
+        [TestCase("1.3.11", "0.23", false)]
+        [TestCase("3.3.33", "3.3.33", false)]
+        [TestCase("3.3.3", "3.3.33", true)]
+        public void TestIsVersionLower_ReturnsCorrectResult(string versionToTest, string currentVersion, params bool[] expected)
+        {
+            var result = Logic.IsVersionLower(versionToTest, currentVersion);
+            Assert.AreEqual(expected[0], result);
         }
     }
 }

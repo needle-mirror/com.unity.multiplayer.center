@@ -13,7 +13,7 @@ namespace Unity.Multiplayer.Center.Questionnaire
         public string FormatVersion = "1.0.0";
 
         /// <summary> The version of the questionnaire itself (different questions, answer choice) </summary>
-        public string Version = "1.0";
+        public string Version ="1.2";
 
         /// <summary> All the questions in the right order (some might be hidden though) </summary>
         public Question[] Questions;
@@ -41,6 +41,9 @@ namespace Unity.Multiplayer.Center.Questionnaire
         /// <summary> Dedicated server architecture (using a dedicated server and not a host) </summary>
         DS,
         
+        /// <summary> Distributed authority (Authority will be distributed across different players)</summary> 
+        DA,
+        
         /// <summary> Not using Netcode for GameObjects nor Netcode for Entities </summary>
         CustomNetcode,
         
@@ -48,7 +51,7 @@ namespace Unity.Multiplayer.Center.Questionnaire
         NoNetcode,
         
         /// <summary> Recommended backend for async games, without a Netcode (goes with <see cref="NoNetcode"/>) </summary> 
-        CloudCode,
+        CloudCode
     }
 
     [Serializable]
@@ -63,8 +66,8 @@ namespace Unity.Multiplayer.Center.Questionnaire
         /// <summary> A question with multiple choices and where you can select multiple answers</summary>
         Checkboxes,
 
-        /// <summary> A question with a slider where you can select specific values between a min and a max</summary>
-        StepSlider
+        /// <summary> A question with a Drop Down</summary>
+        DropDown
     }
 
     [Serializable]
@@ -76,7 +79,7 @@ namespace Unity.Multiplayer.Center.Questionnaire
         /// <summary> Short string to refer to the question (e.g. "Player Count") </summary>
         public string Title;
 
-        /// <summary> Longer string to describe the question (e.g. "How many players will be in the game?") </summary>
+        /// <summary> Longer string to describe the question, which will be displayed in the tooltip </summary>
         public string Description;
 
         /// <summary> Optional weight to increase/decrease importance of this question, applied to all answers.</summary>
@@ -101,6 +104,9 @@ namespace Unity.Multiplayer.Center.Questionnaire
 
         /// <summary> What is displayed to the user </summary>
         public string Title;
+        
+        /// <summary> Optional description that will be shown in a tooltip </summary>
+        public string Description;
 
         /// <summary> How picking this answer will impact the score of a given solution </summary>
         public ScoreImpact[] ScoreImpacts;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Questionnaire;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -39,17 +38,23 @@ namespace Unity.Multiplayer.Center.Window.UI
 
             var existingAnswers = UserChoicesObject.instance.UserAnswers.Answers;
             var questions = m_Questions.Questions;
-            var gameSpecs = new QuestionSection(questions, existingAnswers, "Game Specs", true);
+            
+            
+            var gameSpecs = new QuestionSection(questions, existingAnswers, "Game Specifications", true);
             gameSpecs.AddPresetView();
             gameSpecs.OnPresetSelected += RaisePresetSelected;
             gameSpecs.QuestionUpdated += QuestionUpdated;
             Root.Add(gameSpecs);
+            gameSpecs.CreateAdvancedFoldout(questions, existingAnswers, "Detailed Game Specifications");
+            EvaluateAdvancedSectionVisibility();
+        }
 
-            Root.Add(new VisualElement {name = "questionnaire-spacer"});
-
-            var advanced = new QuestionSection(questions, existingAnswers, "Advanced", false);
-            advanced.QuestionUpdated += QuestionUpdated;
-            Root.Add(advanced);
+        void EvaluateAdvancedSectionVisibility()
+        {
+            var showAdvanced = UserChoicesObject.instance.Preset != Preset.None &&
+                Logic.AreMandatoryQuestionsFilled(QuestionnaireObject.instance.Questionnaire, UserChoicesObject.instance.UserAnswers);
+            
+            Root.Q<QuestionSection>().SetAdvancedSectionVisible(showAdvanced);
         }
 
         public void Clear()
@@ -63,7 +68,7 @@ namespace Unity.Multiplayer.Center.Window.UI
             UserChoicesObject.instance.UserAnswers.Answers ??= new List<AnsweredQuestion>();
         }
         
-        void QuestionUpdated(AnsweredQuestion answeredQuestion)
+        internal void QuestionUpdated(AnsweredQuestion answeredQuestion)
         {
             Logic.Update(UserChoicesObject.instance.UserAnswers, answeredQuestion);
             UserChoicesObject.instance.Save();
@@ -71,9 +76,10 @@ namespace Unity.Multiplayer.Center.Window.UI
             {
                 OnQuestionnaireDataChanged?.Invoke();
             }
+            EvaluateAdvancedSectionVisibility();
         }
         
-        void RaisePresetSelected(Preset preset)
+        internal void RaisePresetSelected(Preset preset)
         {
             OnPresetSelected?.Invoke(preset);
         }

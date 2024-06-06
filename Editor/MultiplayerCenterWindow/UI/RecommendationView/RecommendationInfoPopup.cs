@@ -1,13 +1,14 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Unity.Multiplayer.Center.UI.RecommendationView
+namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
 {
     /// <summary>
     /// Represents a InfoPopUp specifically designed for recommendations.
     /// Note: This implementation assumes that the direct parent of this RecommendationInfoPopup is the
     /// Multiplayer Center window root visual element, which is crucial for position computations of the InfoPopUp.
     /// </summary>
+    /// Todo: I think in the new design we can remove this.
     internal class RecommendationInfoPopup : VisualElement
     {
         Label m_InfoPopUpLabel;

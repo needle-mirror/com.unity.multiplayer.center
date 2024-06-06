@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Recommendations;
+using UnityEngine;
+using static System.Int32;
 
 namespace Unity.Multiplayer.Center.Questionnaire
 {
@@ -47,7 +49,7 @@ namespace Unity.Multiplayer.Center.Questionnaire
                     {
                         case ViewType.Toggle when current.Answers.Count > 1:
                         case ViewType.Radio when current.Answers.Count > 1:
-                        case ViewType.StepSlider when current.Answers.Count != 1:
+                        case ViewType.DropDown when current.Answers.Count != 1:
                             errors.Add($"AnswerData at index {i}: Too many answers (question {current.QuestionId})");
                             break;
                     }
@@ -233,6 +235,7 @@ namespace Unity.Multiplayer.Center.Questionnaire
                 PossibleSolution.LS => SelectedSolutionsData.HostingModel.ClientHosted,
                 PossibleSolution.DS => SelectedSolutionsData.HostingModel.DedicatedServer,
                 PossibleSolution.CloudCode => SelectedSolutionsData.HostingModel.CloudCode,
+                PossibleSolution.DA => SelectedSolutionsData.HostingModel.DistributedAuthority,
                 _ => SelectedSolutionsData.HostingModel.None
             };
         }
@@ -247,6 +250,71 @@ namespace Unity.Multiplayer.Center.Questionnaire
                 PossibleSolution.NoNetcode => SelectedSolutionsData.NetcodeSolution.NoNetcode,
                 _ => SelectedSolutionsData.NetcodeSolution.None
             };
+        }
+
+        public static void MigrateUserChoices(QuestionnaireData questionnaire, UserChoicesObject userChoices)
+        {
+            var versionBeforeMigration = string.IsNullOrEmpty(userChoices.QuestionnaireVersion) ? "1.0" : userChoices.QuestionnaireVersion;
+            
+            // first migration because field was not present
+            if (questionnaire.Version is "1.2" && IsVersionLower(versionBeforeMigration, "1.2"))
+            {
+                if (TryGetAnswerByQuestionId(userChoices.UserAnswers, "Competitiveness", out var competitiveQuestion))
+                {
+                    userChoices.UserAnswers.Answers.Remove(competitiveQuestion);
+                }
+                
+                // this will write the current version.
+                userChoices.Save();
+            }
+            
+            // Medium Pace Option was removed fall back to slow.
+            if (questionnaire.Version is "1.3" && IsVersionLower(versionBeforeMigration, "1.3"))
+            {
+                if (userChoices.UserAnswers.Answers != null && TryGetAnswerByQuestionId(userChoices.UserAnswers, "Pace", out var paceQuestion))
+                {
+                    if (paceQuestion.Answers.Contains("Medium"))
+                    {
+                        // Set the answer to slow, as in the sheet, we changed all medium to slow.
+                        // So this is probably the best guess.
+                        paceQuestion.Answers.Remove("Medium");
+                        paceQuestion.Answers.Add("Slow");
+                    }
+                }
+                
+                // this will write the current version.
+                userChoices.Save();
+            }
+        }
+
+        /// <summary>
+        /// Compares two versions and returns true if the versionToTest is lower than the currentVersion.
+        /// </summary>
+        /// <param name="versionToTest">The version number that gets tested</param>
+        /// <param name="currentVersion">The version number to test against</param>
+        /// <returns>True if versionToTest is lower than currentVersion</returns>
+        internal static bool IsVersionLower(string versionToTest, string currentVersion)
+        {
+            var versionToTestParts = versionToTest.Split('.');
+            var currentVersionParts = currentVersion.Split('.');
+        
+            for (var i = 0; i < Math.Min(versionToTestParts.Length, currentVersionParts.Length); i++)
+            {
+                var canParseCurrentVersion = TryParse(currentVersionParts[i], out var currentVersionPart);
+                var canParseVersionToTestVersion = TryParse(versionToTestParts[i], out var versionToTestPart);
+
+                if (canParseCurrentVersion == false || canParseVersionToTestVersion == false)
+                {
+                    Debug.LogError("Version number is not in the correct format");
+                    return false;   
+                }
+                
+                if ( versionToTestPart != currentVersionPart)
+                    return versionToTestPart < currentVersionPart;
+
+            }
+
+            return versionToTestParts.Length < currentVersionParts.Length;
         }
     }
 }

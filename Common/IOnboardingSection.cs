@@ -1,11 +1,12 @@
 using System;
 using System.Reflection;
+using Unity.Multiplayer.Center.Common.Analytics;
 using UnityEngine.UIElements;
 
 namespace Unity.Multiplayer.Center.Common
 {
     /// <summary>
-    /// Onboarding section meta data to be picked up by the multiplayer center.
+    /// Onboarding section metadata to be picked up by the multiplayer center.
     /// This can only be used once per type. If you wish to make the same section appear in multiple categories/conditions,
     /// please create two types inheriting from the same base class.
     /// </summary>
@@ -49,6 +50,11 @@ namespace Unity.Multiplayer.Center.Common
         /// </summary>
         public string TargetPackageId { get; set; }
 
+        /// <summary>
+        /// Creates a new instance of the attribute.
+        /// </summary>
+        /// <param name="category">The section category.</param>
+        /// <param name="id">The identifier.</param>
         public OnboardingSectionAttribute(OnboardingSectionCategory category, string id)
         {
             Category = category;
@@ -94,6 +100,9 @@ namespace Unity.Multiplayer.Center.Common
         LiveOps
     }
 
+    /// <summary>
+    /// A condition for a section to be displayed.
+    /// </summary>
     public enum DisplayCondition
     {
         /// <summary>
@@ -167,7 +176,7 @@ namespace Unity.Multiplayer.Center.Common
         /// <summary>
         /// The category for in which this section is.
         /// </summary>
-        /// <exception type="NullReferenceException">Thrown if the type is not decorated with <see cref="OnboardingSectionAttribute"/>></exception>
+        /// <exception cref="NullReferenceException">Thrown if the type is not decorated with <see cref="OnboardingSectionAttribute"/>></exception>
         public OnboardingSectionCategory Category => GetType().GetCustomAttribute<OnboardingSectionAttribute>().Category;
     }
     
@@ -193,5 +202,18 @@ namespace Unity.Multiplayer.Center.Common
         /// </summary>
         /// <param name="preset">The latest preset value</param>
         public void HandlePreset(Preset preset) { }
+    }
+
+    /// <summary>
+    /// Implement this interface to have access to the Multiplayer Center analytics provider.
+    /// Use the analytics provider to log events when the user interacts with the section.
+    /// </summary>
+    public interface ISectionWithAnalytics
+    {
+        /// <summary>
+        /// This will be set before the load function is called.
+        /// The implementor can then use the Analytics provider to send events to the analytics backend.
+        /// </summary>
+        public IOnboardingSectionAnalyticsProvider AnalyticsProvider { get; set; }
     }
 }

@@ -143,6 +143,8 @@ namespace Unity.Multiplayer.Center.Onboarding
         
         static bool IsSectionSupportedBySelectedInfrastructure(OnboardingSectionAttribute attribute)
         {
+            if (UserChoicesObject.instance.SelectedSolutions == null) return true;
+            
             var selectedInfrastructure = UserChoicesObject.instance.SelectedSolutions.SelectedHostingModel;
             return attribute.InfrastructureDependency switch
             {

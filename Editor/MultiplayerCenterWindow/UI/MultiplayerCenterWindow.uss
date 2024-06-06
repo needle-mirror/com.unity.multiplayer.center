@@ -1,28 +1,53 @@
 #root {
+    width: 100%;
+    height: 100%;
+    
     --dark-grey: var(--unity-colors-window-background);
     --standard-grey: var(--unity-colors-app_toolbar_button-background-hover);
     --standard-background-color: var(--unity-colors-window-background);
     --light-grey: var(--unity-colors-dropdown-background);
     --border-color: var(--unity-colors-dropdown-border);
-    --checkmark-icon: url("Icons/Check.png");
-    width: 100%;
-    height: 100%;
     --bottom-bar-height: 68px;
-    --spinner-icon: url('Icons/Loading.png');
+    --card-width: 300px;
+    --card-min-width: 200px;
+    --card-poster-icon-width: 92px;
+    --card-poster-icon-height: 64px;
+    
+
+    --checkmark-icon: url("Icons/Check.png");
+    --spinner-icon-big: url('Icons/spinner-big.png');
+    --questionnaire-empty-view-icon: url('Icons/EmptyViewIcon.png');
 }
 
-/* Icons */
-.icon {
+.color-recommendation-badge {
+    color: var(--recommendation-badge-color);
+    border-color: var(--recommendation-badge-color);
+}
+
+
+.icon{
     min-width: 16px;
     max-width: 16px;
     min-height: 16px;
     max-height: 16px;
-    background-size: 16px 16px;
+}
+
+Label{
+    overflow: hidden;
+    white-space: normal;
+}
+
+.view-headline{
+    font-size: 14px;
+    padding-bottom: 8px;
+}
+
+.icon-package-manager{
+    background-image: var(--package-manager-icon);
 }
 
 .icon-questionmark {
     background-image: var(--info-icon);
-    -unity-background-scale-mode: scale-to-fit;
 }
 
 .icon-three-dots {
@@ -30,19 +55,38 @@
     -unity-background-scale-mode: scale-to-fit;
 }
 
+.icon-package-installed{
+    margin-left: 4px;
+    background-image: var(--package-installed-icon);
+}
+
+.icon-NGO{background-image:url('Icons/Ngo.png')}
+.icon-N4E{background-image:url('Icons/N4E.png')}
+.icon-LS{background-image:url('Icons/ClientHosted.png')}
+.icon-DS{background-image:url('Icons/DedicatedServer.png')}
+.icon-DA{background-image:url('Icons/DistributedAuthority.png')}
+.icon-CustomNetcode{background-image:url('Icons/CustomNetcode.png')}
+.icon-NoNetcode{background-image:url('Icons/NoNetcode.png')}
+.icon-CloudCode{background-image:url('Icons/CloudCode.png')}
+
+/*Utilities*/
+
 .processing{
-    background-image: var(--spinner-icon);
+    background-image: var(--spinner-icon-big);
     rotate: 360000deg;
     transition-property: rotate;
     transition-timing-function: linear;
     transition-duration: 2000s;
+    min-width: 64px;
+    max-width: 64px;
+    min-height: 64px;
+    max-height: 64px;
+    position: absolute;
+    top: 50%; 
+    left: 50%;
+    translate: -50% -50%;
 }
 
-/*Utilities*/
-.color-blue {
-    color: var(--standard-blue);
-    border-color: var(--standard-blue);
-}
 
 .color-grey {
     color: var(--badge-color-grey);
@@ -59,17 +103,6 @@
     margin-top: 6px;
     min-height: 32px;
     max-height: 32px;
-}
-
-.divider {
-    margin-top: 10px;
-    margin-bottom: 5px;
-    margin-left: -7px;
-    width: 100%;
-    background-color: black;
-    min-height: 1px;
-    max-height: 1px;
-    opacity: 0.25;
 }
 
 .packageIcon {
@@ -89,36 +122,36 @@
     background-size: 14px 14px;
 }
 
-/* Questionnaire view */
+/* Questionnaire view  */
 
 #questionnaire-view {
-    background-color: var(--standard-grey);
-    border-color: var(--border-color);
-    border-width: 1px;
-    border-radius: 6px;
     margin: 10px;
     padding-bottom: 4px;
 }
 
-#questionnaire-view #header {
-    height: 35px;
-    max-height: 35px;
-    overflow: hidden;
-    -unity-text-align: middle-left;
-    align-items: center;
-    flex-direction: row;
-    margin-left: 0;
-    padding-left: 15px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
+
+#questionnaire-view Label {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+#questionnaire-view Toggle {
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+#advanced-questions > Toggle {
+    -unity-font-style: bold;
 }
 
 /*question-view  One single question in question-view*/
 
-.question-view {
-    margin-left: -2px;
-    margin-right: -2px;
-    background-color: var(--standard-grey);
+.question-view{
+    margin-bottom: 4px;
+}
+
+#advanced-questions .question-view > Label {
+    margin-bottom: 2px;
 }
 
 .question-view Toggle {
@@ -131,7 +164,7 @@
 }
 
 .question-view .unity-radio-button__label {
-    left: 16px;
+    left: 32px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -139,57 +172,17 @@
 
 .question-view .unity-radio-button__input {
     position: absolute;
+    left: 16px;
 }
 
-.step-slider {
-    margin-right: 18px;
-    margin-top: 20px;
-    min-height: 20px;
-}
-
-.mandatory-question .unity-foldout__toggle{
-    margin-left: 0px;
-    margin-right: 0px;
-}
-
-.mandatory-question {
-    margin-left: 0px;
-    margin-right: 0px;
-    padding-left: -1px;
-    padding-right: -1px;
-    background-color: var(--highlight-background-color);
+.mandatory-question Label {
+    padding-bottom: 4px;
+    -unity-font-style: bold;
 }
 
 .question-section__no-scrollbar{
     align-content: flex-start;
     flex-shrink: 0;
-}
-
-.step-slider .step-label {
-    -unity-text-align: lower-center;
-    padding: 0;
-    top: 8px;
-    min-height: 20px;
-    min-width: 50px;
-    position: absolute;
-    translate: -50% -30px;
-    font-size: 10px;
-    margin-bottom: 2px;
-}
-
-.step-slider .step-label-line {
-    background-color: var(--theme-slider-background-color); 
-    bottom: 11px;
-    margin-top: 3px;
-    min-height: 5px;
-    min-width: 2px;
-    position: absolute;
-    translate: -50% 0px;
-}
-
-.step-slider #unity-tracker{
-    margin-left: 4px;
-    margin-right: 4px;
 }
 
 /*bottom bar - holding the install button, spinning icon and the package count */
@@ -217,12 +210,9 @@
     padding-bottom: 12px;
 }
 
-#preset-dropdown {
-    padding-bottom: 10px;
-    padding-right: 15px;
-    padding-left: 5px;
+EnumField, DropdownField {
     margin: 0px;
-    max-width: 320px;
+    min-height: 19px;
 }
 
 /* recommendation view*/
@@ -231,69 +221,145 @@
     margin-top: 10px;
 }
 
-/*recommendation section - foldout that holds recommendations*/
-.section-foldout{
-    background-color: var(--light-grey);
+#main-sections-container{
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.main-section{
+    background-color: var(--unity-colors-inspector_titlebar-border_accent);
     border-width: 1px;
-    border-radius: 6px;
     border-color: var(--border-color);
+    padding-bottom: 16px;
+    margin: 0px 8px 8px 0px;
+    width: var(--card-width);
+    min-width: var(--card-min-width);
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+
+.main-section .recommendation-item{
+    padding: 0px;
+    margin-left: -4px;
+    margin-right: -4px;
+
+}
+
+.main-section DropdownField{
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 8px;
+}
+
+.sub-section{
+    margin-top: 4px;
+    margin-left: 0px;
+    margin-right: 8px;
+}
+
+.subsection-headline{
+    font-size: 12px;
+    -unity-font-style: bold;
+}
+
+/*
+.sub-section .recommendation-item{
+    width: var(--card-width);
+    min-width: var(--card-min-width);
+    margin-right: 8px;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+*/
+ 
+
+/*recommendation section - foldout that holds recommendations*/
+
+#card-headline{
+    font-size: 12px;
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+}
+
+#associated-features-headline{
+    margin-top: 8px;
+}
+
+#card-poster-image{
+    margin-right: -16px;
+    margin-left: -16px;
+    min-width: 100%;
+    min-height: 92px;
+    
+    background-color: var(--card-poster-image-bg-color);
+    margin-bottom: 16px;
+    align-items: center;
+    justify-content: center;
+}
+
+#card-poster-image >*{
+    
+    min-width: var(--card-poster-icon-width);
+    max-width: var(--card-poster-icon-width);
+    min-height: var(--card-poster-icon-height);
+    max-height: var(--card-poster-icon-height);
 }
 
 #recommendation-view-section-container {
     flex-grow: 1;
-    margin-right: 15px;
     margin-left: 10px;
     margin-bottom: 10px;
-}
-
-.section-foldout #unity-content {
-    background-color: var(--standard-grey);
-    padding-top: 12px;
-    padding-bottom: 12px;
-    margin-left: 0;
-    padding-left: 15px;
-    padding-right: 15px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
-.section-foldout Toggle {
-    min-height: 32px;
 }
 
 /*recommendation item - One Item that a user can select or unselect within recommendation section*/
 
 .recommendation-item {
+    border-width: 1px;
+    background-color: var(--unity-colors-inspector_titlebar-border_accent);
+    
     overflow: hidden;
+    flex-grow: 1;
+    flex-shrink: 1;
     min-height: 32px;
+    margin-top: 4px;
+    padding:4px;
 }
 
 .recommendation-item #sub-info-text {
-    margin-left: 30px;
+    margin-left: 20px;
+    -unity-font-style: italic;
     white-space: normal;
     text-overflow: ellipsis;
     overflow: hidden;
 }
 
 .recommendation-item #header {
+ 
     flex-direction: row;
     align-content: center;
     align-items: center;
-    flex-grow: 1;
     justify-content: space-between;
 }
 
-.recommendation-item-left-container {
+.recommendation-item-top-left-container {
     flex-direction: row;
-    flex-grow: 0;
+    flex-grow: 1;
     flex-shrink: 1;
     align-items: center;
-    margin-right: 15px;
 }
 
-.recommendation-item-right-container {
+.recommendation-item-top-left-container Label {
+    flex-shrink: 1;
+}
+
+.recommendation-item-top-right-container {
     max-width: 64px;
+    flex-shrink: 0;
     flex-direction: row;
+    justify-content: flex-end;
 }
 
 /* InfoPopup for Recommendations */
@@ -308,22 +374,18 @@
 }
 
 .recommended-badge {
-    padding: 2px;
-    margin-left: 8px;
-    padding-left: 6px;
-    padding-right: 6px;
+    font-size: 9px;
+    padding: 1px;
+    margin-left: 4px;
+    padding-left: 3px;
+    padding-right: 3px;
     border-width: 1px;
-    border-radius: 12px;
+    border-radius: 3px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    min-width: 35px;
-    min-height: 20px;
-
-}
-
-.recommended-badge:hover {
-    background-color: var(--light-grey);
+    min-width: 24px;
+    flex-shrink: 1;
 }
 
 /*Tab views - if we are sure we will not support 2022, we should merge this with TabView uss*/
@@ -336,6 +398,17 @@
 
 #spit-view {
     margin-bottom: var(--bottom-bar-height);
+    border-top-width: 1px;
+    border-top-color: var(--border-color);
+}
+
+#unity-dragline-anchor{
+    background-color: var(--border-color);
+}
+
+#unity-dragline-anchor:hover{
+    background-color: white;
+    opacity: 0.3;
 }
 
 .tab-button {
@@ -413,19 +486,12 @@
     flex-grow: 1;
 }
 
-#questionnaire-spacer {
-    min-height: 15px;   
-    background-color: var(--dark-grey);
-    border-color: var(--dark-grey);
-    border-width: 1px;
-    margin: -1px
-}
 
 .doc-button {
     border-width: 0px;
     margin: 1px;
     background-color: var(--light-grey);
-    color: var(--standard-blue);
+    color: var(--unity-colors-link-text);
 }
 
 .doc-button:hover {
@@ -452,84 +518,49 @@
 }
 
 #empty-view-content{
-    height: 50%;
-    width: 50%;
+    height: 100%;
+    width: 75%;
     max-width: 400px;
+    justify-content: center;
 }
 
 #empty-view-icon {
-    min-height: 128px;
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    flex-grow: 1;
-    background-image: var(--questionnaire-group-icon);
+    min-height: 50%;
+    background-image: var(--questionnaire-empty-view-icon);
     background-size: contain;
-    opacity: 0.2;
     margin-bottom: 8px;
 }
 
 
 #empty-view-message {
-    padding-top: 16px;
-    position: absolute;
+    flex-shrink: 0;
+    flex-grow: 0;
     width: 100%;
-    top: 100%;
-    -unity-text-align: upper-center;
+    -unity-text-align: upper-left;
     overflow: hidden;
     white-space: normal;
 }
 
-/* Welcome view */
-
-#welcome-view {
-    flex-grow: 1;
-    align-items: center;
-    justify-content: flex-start;
-    margin-top: 50px;
+/*onboarding section*/
+.section-foldout{
+    background-color: var(--light-grey);
+    border-width: 1px;
+    border-radius: 6px;
+    border-color: var(--border-color);
 }
 
-#welcome-view .next-step-button{
-    align-self: flex-end;
+.section-foldout #unity-content {
+    background-color: var(--standard-grey);
+    padding-top: 12px;
+    padding-bottom: 12px;
+    margin-left: 0;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
 }
 
-#welcome-view #header{
-    display: none;
-}
-
-.question-view__horizontal{
-    flex-grow: 1;
-    flex-direction: row;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    min-height: 50px;
-}
-
-.question-view__horizontal-header{
-    flex-grow: 1;
-    flex-shrink: 0;
-    align-content: center;
-    width: 50%;
-}
-
-.question-view__horizontal-title{
-    margin-bottom: 5px;
-    -unity-font-style: bold;
-}
-
-.question-view__horizontal-header .unity-text-element{
-    white-space: normal;
-}
-
-.question-view__horizontal-container{
-    flex-grow: 1;
-    flex-shrink: 0;
-    width: 50%;
-    margin-left: 10px;
-    align-self: center;
-}
-
-#welcome-view .question-section{
-    width: 50%;
+.section-foldout Toggle {
+    min-height: 32px;
 }
 

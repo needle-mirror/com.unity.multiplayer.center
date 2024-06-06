@@ -22,6 +22,7 @@ namespace Unity.Multiplayer.Center.Recommendations
         {
             base.Save(saveAsText:true);
             AssetDatabase.Refresh();
+            DestroyImmediate(this);
         }
 #endif
     }

@@ -1,6 +1,6 @@
 # Use the Multiplayer Center window
 
-Open the Unity Multiplayer Center window by selecting **Window** > **Multiplayer Center**.
+Open the Unity Multiplayer Center window by selecting **Window** > **Multiplayer** > **Multiplayer Center**.
 To use the Multiplayer Center, do the following:
 
 1. Use the **Recommendation** tab to generate recommended packages and solutions based on your game's requirements and install them.

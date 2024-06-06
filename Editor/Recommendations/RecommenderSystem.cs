@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Questionnaire;
+using UnityEngine;
 
 namespace Unity.Multiplayer.Center.Recommendations
 {
     using AnswerWithQuestion = Tuple<Question, Answer>;
 
     /// <summary>
-    /// Builds recommendation based on Questionnaire data and Answer data
+    /// Builds recommendation views based on Questionnaire data and Answer data.
+    /// The recommendation is based on the scoring of the answers, which is controlled by the RecommenderSystemData.
     /// </summary>
     internal static class RecommenderSystem
     {
@@ -18,9 +20,9 @@ namespace Unity.Multiplayer.Center.Recommendations
         /// the answers.
         /// If no answer has been given or the questionnaire does not match the answers, this returns null.
         /// </summary>
-        /// <param name="questionnaireData"></param>
-        /// <param name="answerData"></param>
-        /// <returns></returns>
+        /// <param name="questionnaireData">The questionnaire that the user filled.</param>
+        /// <param name="answerData">The answers the user gave.</param>
+        /// <returns>The recommendation view data.</returns>
         public static RecommendationViewData GetRecommendation(QuestionnaireData questionnaireData, AnswerData answerData)
         {
             var answers = CollectAnswers(questionnaireData, answerData);
@@ -28,11 +30,50 @@ namespace Unity.Multiplayer.Center.Recommendations
             // Note: valid now only because we do not have multiple answers per question
             if (answers.Count < questionnaireData.Questions.Length) return null;
 
-            var scoredSolutions = CalculateScore(answers);
-
             var data = RecommenderSystemDataObject.instance.RecommenderSystemData;
-            
+            var scoredSolutions = CalculateScore(data, answers);
+
             return CreateRecommendation(data, scoredSolutions);
+        }
+
+        /// <summary>
+        /// Get the view data for all possible solution selections.
+        /// </summary>
+        /// <returns>The constructed set of views</returns>
+        public static SolutionsToRecommendedPackageViewData GetSolutionsToRecommendedPackageViewData()
+        {
+            var data = RecommenderSystemDataObject.instance.RecommenderSystemData;
+            var installedPackageDictionary = PackageManagement.InstalledPackageDictionary();
+            var selections = new SolutionSelection[16];
+            var packages = new RecommendedPackageViewData[16][];
+            PossibleSolution[] netcodes = { PossibleSolution.NGO, PossibleSolution.N4E, PossibleSolution.CustomNetcode, PossibleSolution.NoNetcode };
+            PossibleSolution[] hostings = { PossibleSolution.LS, PossibleSolution.DS, PossibleSolution.CloudCode, PossibleSolution.DA };
+
+            var index = 0;
+            foreach (var netcode in netcodes)
+            {
+                foreach (var hosting in hostings)
+                {
+                    var selection = new SolutionSelection(netcode, hosting);
+                    selections[index] = selection;
+                    packages[index] = BuildRecommendationForSelection(data, selection, installedPackageDictionary);
+
+                    ++index;
+                }
+            }
+
+            return new SolutionsToRecommendedPackageViewData(selections, packages);
+        }
+
+        public static void AdaptRecommendationToNetcodeSelection(RecommendationViewData recommendation)
+        {
+            RecommendationUtils.MarkIncompatibleHostingModels(recommendation);
+            if (RecommendationUtils.GetSelectedHostingModel(recommendation) != null)
+                return; // All good, something is selected
+            
+            var maxIndex = RecommendationUtils.IndexOfMaximumScore(recommendation.ServerArchitectureOptions);
+            recommendation.ServerArchitectureOptions[maxIndex].Selected = true;
+            recommendation.ServerArchitectureOptions[maxIndex].RecommendationType = RecommendationType.MainArchitectureChoice;
         }
 
         static List<AnswerWithQuestion> CollectAnswers(QuestionnaireData questionnaireData, AnswerData answerData)
@@ -62,14 +103,15 @@ namespace Unity.Multiplayer.Center.Recommendations
             return givenAnswers;
         }
 
-        static Dictionary<PossibleSolution, Scoring> CalculateScore(List<AnswerWithQuestion> answers)
+        static Dictionary<PossibleSolution, Scoring> CalculateScore(RecommenderSystemData data, List<AnswerWithQuestion> answers)
         {
             var possibleSolutions = Enum.GetValues(typeof(PossibleSolution));
             Dictionary<PossibleSolution, Scoring> scores = new(possibleSolutions.Length);
 
             foreach (var solution in possibleSolutions)
             {
-                scores.Add((PossibleSolution) solution, new Scoring());
+                var solutionObject = data.SolutionsByType[(PossibleSolution) solution];
+                scores.Add((PossibleSolution) solution, new Scoring(solutionObject.ShortDescription));
             }
 
             foreach (var (question, answer) in answers)
@@ -98,9 +140,11 @@ namespace Unity.Multiplayer.Center.Recommendations
             recommendation.ServerArchitectureOptions = BuildRecommendedSolutions(data, new [] {
                 (PossibleSolution.LS, scoredSolutions[PossibleSolution.LS]),
                 (PossibleSolution.DS, scoredSolutions[PossibleSolution.DS]),
-                (PossibleSolution.CloudCode, scoredSolutions[PossibleSolution.CloudCode]),},
+                (PossibleSolution.CloudCode, scoredSolutions[PossibleSolution.CloudCode]),
+                (PossibleSolution.DA, scoredSolutions[PossibleSolution.DA]) },
                 installedPackageDictionary);
             
+            AdaptRecommendationToNetcodeSelection(recommendation);
             return recommendation;
         }
 
@@ -117,6 +161,34 @@ namespace Unity.Multiplayer.Center.Recommendations
                 var recoType = scoredSolution.Item1 == recommendedSolution ? RecommendationType.MainArchitectureChoice : RecommendationType.SecondArchitectureChoice;
                 var reco = new RecommendedSolutionViewData(data, data.SolutionsByType[scoredSolution.Item1], recoType, scoredSolution.Item2, installedPackageDictionary);
                 result[index] = reco;
+            }
+
+            return result;
+        }
+
+        static RecommendedPackageViewData[] BuildRecommendationForSelection(RecommenderSystemData data, SolutionSelection selection, Dictionary<string, string> installedPackageDictionary)
+        {
+            // Note: working on a copy that we modify
+            var netcodePackages = data.SolutionsByType[selection.Netcode].RecommendedPackages.ToArray();
+            var hostingOverrides = data.SolutionsByType[selection.HostingModel].RecommendedPackages;
+            foreach (var package in hostingOverrides)
+            {
+                var existing = Array.FindIndex(netcodePackages, p => p.PackageId == package.PackageId);
+                if (existing == -1)
+                {
+                    Debug.LogError($"Malformed data for hosting model {selection.HostingModel}: package {package.PackageId} not found in netcode packages of {selection.Netcode}.");
+                    continue;
+                }
+
+                netcodePackages[existing] = package;
+            }
+            
+            var result = new RecommendedPackageViewData[netcodePackages.Length];
+            for (var index = 0; index < netcodePackages.Length; index++)
+            {
+                var package = netcodePackages[index];
+                installedPackageDictionary.TryGetValue(package.PackageId, out var installedVersion);
+                result[index] = new RecommendedPackageViewData( data.PackageDetailsById[package.PackageId], package, installedVersion);
             }
 
             return result;

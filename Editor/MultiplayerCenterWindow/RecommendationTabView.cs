@@ -1,8 +1,10 @@
 using System;
+using Unity.Multiplayer.Center.Analytics;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Questionnaire;
 using Unity.Multiplayer.Center.Recommendations;
 using Unity.Multiplayer.Center.Window.UI;
+using Unity.Multiplayer.Center.Window.UI.RecommendationView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -15,15 +17,19 @@ namespace Unity.Multiplayer.Center.Window
         
         RecommendationViewBottomBar m_BottomBarView;
         
-        WelcomeView m_WelcomeView;
-        
+        bool m_ShouldRefresh = true;
+
+
         [field: SerializeField] // Marked as redundant by Rider, but it is not.
         public string Name { get; private set; }
 
         public VisualElement RootVisualElement { get; set; }
 
-        bool m_ShouldRefresh = true;
+        public IMultiplayerCenterAnalytics MultiplayerCenterAnalytics { get; set; }
         
+        // Access to QuestionnaireView for testing purposes
+        internal QuestionnaireView QuestionnaireView => m_QuestionnaireView;
+
         public RecommendationTabView(string name = "Recommendation")
         {
             Name = name;
@@ -38,38 +44,17 @@ namespace Unity.Multiplayer.Center.Window
 
         public void Refresh()
         {
+            Debug.Assert(MultiplayerCenterAnalytics != null, "MultiplayerCenterAnalytics != null");
             if (!m_ShouldRefresh && RootVisualElement.childCount > 0) return;
-
-            if (WelcomeView.ShouldShowWelcomeScreen())
-            {
-                CreateWelcomeView();
-            }
-            else
-            {
-                m_WelcomeView = null; 
-                CreateStandardView();
-            }
-
+            CreateStandardView();
             m_ShouldRefresh = false;
         }
 
-
-        void CreateWelcomeView()
-        {
-            RootVisualElement.Clear();
-            m_WelcomeView = new WelcomeView();
-            m_WelcomeView.NextButtonClicked += () =>
-            {
-                m_ShouldRefresh = true;
-                Refresh();
-            };
-            RootVisualElement.Add(m_WelcomeView.Root);
-        }
-
+       
         void CreateStandardView()
         {
             RootVisualElement.Clear();
-
+            MigrateUserChoices();
             // We need this because Bottom bar is a part of the Recommendations Tab and it should always stay
             // at the bottom of the view. So we need to make sure that the root tab element is always 100% height.
             RootVisualElement.style.height = Length.Percent(100);
@@ -91,8 +76,8 @@ namespace Unity.Multiplayer.Center.Window
             horizontalContainer.Add(m_RecommendationView.Root);
             RootVisualElement.Add(horizontalContainer);
 
-            m_BottomBarView = new RecommendationViewBottomBar();
-            m_RecommendationView.OnPackageSelectionChanged += () => m_BottomBarView.UpdatePackagesToInstall(RecommendationUtils.PackagesToInstall(m_RecommendationView.CurrentRecommendation));
+            m_BottomBarView = new RecommendationViewBottomBar(MultiplayerCenterAnalytics);
+            m_RecommendationView.OnPackageSelectionChanged += () => m_BottomBarView.UpdatePackagesToInstall(m_RecommendationView.CurrentRecommendation, m_RecommendationView.AllPackages);
             RootVisualElement.Add(m_BottomBarView);
             UpdateRecommendation(keepSelection: true);
         }
@@ -102,33 +87,53 @@ namespace Unity.Multiplayer.Center.Window
             UpdateRecommendation(keepSelection: false);
         }
         
+        void MigrateUserChoices()
+        {
+            var questionnaire = QuestionnaireObject.instance.Questionnaire;
+            var userChoices = UserChoicesObject.instance;
+            
+            // make sure the version of the questionnaire is the same as the one in the user choices.
+            if (questionnaire.Version != userChoices.QuestionnaireVersion && userChoices.UserAnswers.Answers.Count > 0) 
+            {
+                Logic.MigrateUserChoices(questionnaire, userChoices);
+            }
+        }
+        
         void UpdateRecommendation(bool keepSelection)
         {
             var questionnaire = QuestionnaireObject.instance.Questionnaire;
-            var answers = UserChoicesObject.instance;
-            var errors = Logic.ValidateAnswers(questionnaire, answers.UserAnswers);
+            var userChoices = UserChoicesObject.instance;
+
+            var errors = Logic.ValidateAnswers(questionnaire, userChoices.UserAnswers);
             foreach (var error in errors)
             {
                 Debug.LogError(error);
             }
 
-            var recommendation = RecommenderSystem.GetRecommendation(questionnaire, answers.UserAnswers);
+            var recommendation = RecommenderSystem.GetRecommendation(questionnaire, userChoices.UserAnswers);
             if(keepSelection)
             {
-                RecommendationUtils.ApplyPreviousSelection(recommendation, answers.SelectedSolutions);
+                RecommendationUtils.ApplyPreviousSelection(recommendation, userChoices.SelectedSolutions);
             }
+            else if (recommendation != null) // we only send the event if there is a recommendation and it is a new one
+            {
+                MultiplayerCenterAnalytics.SendRecommendationEvent(userChoices.UserAnswers, userChoices.Preset);
+            }
+            
             m_RecommendationView.UpdateRecommendation(recommendation);
-            m_BottomBarView.UpdatePackagesToInstall(RecommendationUtils.PackagesToInstall(recommendation));
+            m_BottomBarView.UpdatePackagesToInstall(recommendation, m_RecommendationView.AllPackages);
         }
 
         void OnPresetSelected(Preset preset)
         {
             var (resultAnswerData, recommendation) = Logic.ApplyPresetToAnswerData(
-                UserChoicesObject.instance.UserAnswers, preset,
-                QuestionnaireObject.instance.Questionnaire);
+                UserChoicesObject.instance.UserAnswers, preset, QuestionnaireObject.instance.Questionnaire);
 
             UserChoicesObject.instance.UserAnswers = resultAnswerData;
             UserChoicesObject.instance.Save();
+
+            if(recommendation != null)
+                MultiplayerCenterAnalytics.SendRecommendationEvent(resultAnswerData, preset);
 
             m_QuestionnaireView.Refresh();
             m_RecommendationView.UpdateRecommendation(recommendation);

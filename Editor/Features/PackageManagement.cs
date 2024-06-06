@@ -55,8 +55,21 @@ namespace Unity.Multiplayer.Center
             var package = GetInstalledPackage(packageId);
             return package != null && package.isDirectDependency;
         }
-        
+
+        /// <summary>
+        /// Checks if a package is installed.
+        /// </summary>
+        /// <param name="packageId">The package name, e.g. com.unity.netcode</param>
+        /// <returns>True if the package is installed, false otherwise</returns>
         public static bool IsInstalled(string packageId) => GetInstalledPackage(packageId) != null;
+
+        /// <summary>
+        /// Checks if a package is embedded, linked locally, installed via Git or local Tarball.
+        /// </summary>
+        /// <param name="packageId">The package name, e.g. com.unity.netcode</param>
+        /// <returns>True if the package is linked locally, false otherwise</returns>
+        public static bool IsLinkedLocallyOrEmbeddedOrViaGit(string packageId) => 
+            GetInstalledPackage(packageId) is { source: PackageSource.Embedded or PackageSource.Local or PackageSource.Git or PackageSource.LocalTarball };
 
         /// <summary>
         /// Finds the installed package with the given packageId or returns null.
@@ -66,6 +79,32 @@ namespace Unity.Multiplayer.Center
         public static UnityEditor.PackageManager.PackageInfo GetInstalledPackage(string packageId)
         {
             return UnityEditor.PackageManager.PackageInfo.FindForPackageName(packageId);
+        }
+
+        /// <summary>
+        /// Filters out the packages that are already embedded, linked locally, installed via Git or local Tarball and returns this new list.
+        /// </summary>
+        /// <param name="installCandidates">A list of package IDs that are candidates for installation.</param>
+        /// <returns>A new filtered list of packages.</returns>
+        public static IEnumerable<string> RemoveLocallyLinkedOrEmbeddedOrViaGitPackagesFromList(IEnumerable<string> installCandidates)
+        {
+            var filteredList = new List<string>();
+
+            foreach (var packageId in installCandidates)
+            {
+                if (!IsLinkedLocallyOrEmbeddedOrViaGit(packageId))
+                {
+                    filteredList.Add(packageId);
+                }
+                else
+                {
+                    Debug.Log($"Removing {packageId} from install candidates.\n" +
+                        "This package is already embedded, linked locally, installed via Git, or from a local tarball. " +
+                        "Please check the Package Manager for more information or to upgrade manually.");
+                }
+            }
+
+            return filteredList;
         }
 
         /// <summary>
@@ -100,7 +139,7 @@ namespace Unity.Multiplayer.Center
         /// <param name="packageIdsToRemove">Optional package name/ids to remove</param>
         public static void InstallPackages(IEnumerable<string> packageIds, Action<bool> onAllInstalled = null, IEnumerable<string> packageIdsToRemove = null)
         {
-            s_Installer = new PackageInstaller(packageIds, packageIdsToRemove);
+            s_Installer = new PackageInstaller(RemoveLocallyLinkedOrEmbeddedOrViaGitPackagesFromList(packageIds), packageIdsToRemove);
             s_Installer.OnInstalled += onAllInstalled;
             s_Installer.OnInstalled += _ => s_Installer = null;
         }

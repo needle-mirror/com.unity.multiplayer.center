@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Unity.Multiplayer.Center.Questionnaire;
+using UnityEngine;
 
 namespace Unity.Multiplayer.Center.Recommendations
 {
@@ -21,6 +22,46 @@ namespace Unity.Multiplayer.Center.Recommendations
         /// It comes with UGS services that we might or might not recommend
         /// </summary>
         public RecommendedSolutionViewData[] ServerArchitectureOptions;
+    }
+    
+    /// <summary>
+    /// For each selection (netcode, hosting) model, there is a specific set of recommended packages
+    /// This class stores this information and provides access to it.
+    /// </summary>
+    [Serializable]
+    internal class SolutionsToRecommendedPackageViewData
+    {
+        [SerializeField] RecommendedPackageViewDataArray[] m_Packages;
+        public SolutionSelection[] Selections;
+
+        // Because we cannot serialize two-dimensional arrays
+        [Serializable]
+        internal struct RecommendedPackageViewDataArray
+        {
+            public RecommendedPackageViewData[] Packages;
+        }
+        
+        public SolutionsToRecommendedPackageViewData(SolutionSelection[] selections, RecommendedPackageViewData[][] packages)
+        {
+            Debug.Assert(selections.Length == packages.Length, "Selections and packages must have the same length");
+            Selections = selections;
+            m_Packages = new RecommendedPackageViewDataArray[packages.Length];
+            for (var i = 0; i < packages.Length; i++)
+            {
+                m_Packages[i] = new RecommendedPackageViewDataArray {Packages = packages[i]};
+            }
+        }
+        
+        public RecommendedPackageViewData[] GetPackagesForSelection(PossibleSolution netcode, PossibleSolution hosting)
+        {
+            return GetPackagesForSelection(new SolutionSelection(netcode, hosting));
+        }
+        
+        public RecommendedPackageViewData[] GetPackagesForSelection(SolutionSelection selection)
+        {
+            var index = Array.IndexOf(Selections, selection);
+            return index < 0 ? Array.Empty<RecommendedPackageViewData>() : m_Packages[index].Packages;
+        }
     }
 
     /// <summary>
@@ -50,11 +91,6 @@ namespace Unity.Multiplayer.Center.Recommendations
         /// Url to feature documentation
         /// </summary>
         public string DocsUrl;
-
-        /// <summary>
-        /// A short description of the feature.
-        /// </summary>
-        public string ShortDescription = "Short description not added yet";
         
         /// <summary>
         /// Recommendation is installed and direct dependency
@@ -87,16 +123,13 @@ namespace Unity.Multiplayer.Center.Recommendations
         /// The main package to install for this solution (note that this might be null, e.g. for client hosted game)
         /// </summary>
         public RecommendedPackageViewData MainPackage;
-        public RecommendedPackageViewData[] AssociatedFeatures;
-
+        
         public RecommendedSolutionViewData(RecommenderSystemData data, RecommendedSolution solution,
             RecommendationType type, Scoring scoring, Dictionary<string, string> installedPackageDictionary)
         {
             if (!string.IsNullOrEmpty(solution.MainPackageId))
             {
                 var mainPackageDetails = data.PackageDetailsById[solution.MainPackageId];
-                ShortDescription = mainPackageDetails.ShortDescription;
-                MainPackage = new RecommendedPackageViewData(mainPackageDetails, type, installedPackageDictionary);
                 DocsUrl = string.IsNullOrEmpty(solution.DocUrl) ? mainPackageDetails.DocsUrl : solution.DocUrl;
 
                 if (installedPackageDictionary.ContainsKey(solution.MainPackageId))
@@ -104,27 +137,19 @@ namespace Unity.Multiplayer.Center.Recommendations
                     InstalledVersion = installedPackageDictionary[solution.MainPackageId];
                     IsInstalledAsProjectDependency = PackageManagement.IsDirectDependency(solution.MainPackageId);
                 }
+
+                MainPackage = new RecommendedPackageViewData(mainPackageDetails, type, InstalledVersion);
             }
             else
             {
-                ShortDescription = solution.ShortDescription;
                 DocsUrl = solution.DocUrl;
             }
 
             RecommendationType = type;
             Title = solution.Title;
-            var otherFeatures = new RecommendedPackageViewData[solution.RecommendedPackages.Length];
-            for (var i = 0; i < solution.RecommendedPackages.Length; i++)
-            {
-                var packageRecommendation = solution.RecommendedPackages[i];
-                var packageDetails = data.PackageDetailsById[packageRecommendation.PackageId];
-                otherFeatures[i] = new RecommendedPackageViewData(packageDetails, packageRecommendation, installedPackageDictionary);
-            }
-
-            AssociatedFeatures = otherFeatures;
             Reason = scoring?.GetReasonString();
             Score = scoring?.TotalScore ?? 0f;
-            Selected = RecommendationType == RecommendationType.MainArchitectureChoice;
+            Selected = RecommendationType.IsRecommendedSolution();
 
             Solution = solution.Type;
         }
@@ -139,39 +164,28 @@ namespace Unity.Multiplayer.Center.Recommendations
         public string PackageId;
 
         public string Name;
+        
+        /// <summary>
+        /// A short description of the feature.
+        /// </summary>
+        public string ShortDescription = "Short description not added yet";
 
-        public RecommendedPackageViewData(PackageDetails details, RecommendationType type, Dictionary<string, string> installedPackageDictionary, string reason = null)
+        public RecommendedPackageViewData(PackageDetails details, RecommendationType type, string installedVersion=null, string reason = null)
         {
             RecommendationType = type;
             PackageId = details.Id;
             Name = details.Name;
-            Selected = type is RecommendationType.OptionalStandard or RecommendationType.OptionalFeatured;
+            Selected = type.IsRecommendedPackage();
             ShortDescription = details.ShortDescription;
             Reason = reason;
             DocsUrl = details.DocsUrl;
-
-            if (installedPackageDictionary.ContainsKey(PackageId))
-            {
-                InstalledVersion = installedPackageDictionary[PackageId];
-                IsInstalledAsProjectDependency = PackageManagement.IsDirectDependency(PackageId);
-            }
+            InstalledVersion = installedVersion;
+            IsInstalledAsProjectDependency = installedVersion != null && PackageManagement.IsDirectDependency(PackageId);
         }
 
-        public RecommendedPackageViewData(PackageDetails details, RecommendedPackage recommendation, Dictionary<string, string> installedPackageDictionary)
+        public RecommendedPackageViewData(PackageDetails details, RecommendedPackage recommendation,  string installedVersion=null)
+        : this(details, recommendation.Type, installedVersion, recommendation.Reason)
         {
-            RecommendationType = recommendation.Type;
-            PackageId = details.Id;
-            Name = details.Name;
-            Selected = recommendation.Type is RecommendationType.OptionalStandard or RecommendationType.OptionalFeatured;
-            Reason = recommendation.Reason;
-            ShortDescription = details.ShortDescription;
-            DocsUrl = details.DocsUrl;
-
-            if (installedPackageDictionary.ContainsKey(PackageId))
-            {
-                InstalledVersion = installedPackageDictionary[PackageId];
-                IsInstalledAsProjectDependency = PackageManagement.IsDirectDependency(PackageId);
-            }
         }
     }
 }

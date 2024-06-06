@@ -18,33 +18,49 @@ namespace Unity.Multiplayer.Center.Window.UI
     {
         public VisualElement ContentRoot { get; private set; }
         public event Action<AnsweredQuestion> QuestionUpdated;
-        
-        public event Action<Preset> OnPresetSelected; 
 
-        readonly bool m_QuestionViewHaveHorizontalStyle = false;
-        
+        public event Action<Preset> OnPresetSelected;
+
+        const string k_AdvancedFoldoutName = "advanced-questions";
+
+        public void CreateAdvancedFoldout(Question[] questions, IEnumerable<AnsweredQuestion> existingAnswers, string headerTitle)
+        {
+            var foldout = new Foldout
+            {
+                text = headerTitle,
+                name = k_AdvancedFoldoutName
+            };
+            foreach (var question in questions)
+            {
+                if (question.IsMandatory)
+                    continue;
+
+                foldout.Add(CreateSingleQuestionView(question, existingAnswers));
+            }
+
+            ContentRoot.Insert(1, foldout);
+        }
+
         public QuestionSection(Question[] questions, IEnumerable<AnsweredQuestion> existingAnswers, string headerTitle,
-            bool mandatoryQuestions, bool horizontal = false)
+            bool mandatoryQuestions)
         {
             var title = new VisualElement();
-            AddToClassList(StyleClasses.QuestionSection);
             title.Add(new Label() {text = headerTitle});
-            title.name = "header";
+            title.AddToClassList("view-headline");
             Add(title);
-
-            m_QuestionViewHaveHorizontalStyle = horizontal;
-            var withScrollView = !mandatoryQuestions && !horizontal;
-            if(!withScrollView)
+            
+            var withScrollView = !mandatoryQuestions;
+            if (!withScrollView)
                 AddToClassList(StyleClasses.QuestionSectionNoScrollbar);
             ContentRoot = CreateContentRoot(withScrollView);
-            
+
             Add(ContentRoot);
 
             for (var index = 0; index < questions.Length; index++)
             {
                 if ((!mandatoryQuestions && questions[index].IsMandatory) || (mandatoryQuestions && !questions[index].IsMandatory))
                     continue;
-                
+
                 ContentRoot.Add(CreateSingleQuestionView(questions[index], existingAnswers));
             }
         }
@@ -53,7 +69,7 @@ namespace Unity.Multiplayer.Center.Window.UI
         {
             ContentRoot.Insert(0, CreatePresetView());
         }
-        
+
         static VisualElement CreateContentRoot(bool withScrollView)
         {
             if (!withScrollView)
@@ -66,29 +82,29 @@ namespace Unity.Multiplayer.Center.Window.UI
 
         VisualElement CreateSingleQuestionView(Question question, IEnumerable<AnsweredQuestion> existingAnswers)
         {
-            var existingAnswer = existingAnswers.FirstOrDefault(x => x.QuestionId == question.Id)?? new AnsweredQuestion() {QuestionId = question.Id};
+            var existingAnswer = existingAnswers.FirstOrDefault(x => x.QuestionId == question.Id) ?? new AnsweredQuestion() {QuestionId = question.Id};
             var questionView = GetQuestionHeader(question, out var questionContainer);
             questionContainer.Add(QuestionViewFactory.CreateQuestionViewInput(question, existingAnswer, RaiseQuestionUpdated));
             return questionView;
         }
 
-        VisualElement GetQuestionHeader(Question question, out VisualElement inputContainer)
+        static VisualElement GetQuestionHeader(Question question, out VisualElement inputContainer)
         {
-            return m_QuestionViewHaveHorizontalStyle ? QuestionViewFactory.HorizontalQuestionHeader(question, out inputContainer)
-                : QuestionViewFactory.StandardQuestionHeader(question, out inputContainer);
+            return QuestionViewFactory.StandardQuestionHeader(question, out inputContainer);
         }
-        
+
         void RaiseQuestionUpdated(AnsweredQuestion question)
         {
             QuestionUpdated?.Invoke(question);
         }
-        
+
         VisualElement CreatePresetView()
         {
+            const string description = "Select the game genre that is the closest match to your project to generate common game specifications for this genre and recommended solutions. Recommendations are based solely on player count and game specifications.";
             var presetQuestion = new Question()
-                { Title = "Game Genre", Description = "What is the genre closest to your game?", IsMandatory = true};
-                    
-            var questionView  = GetQuestionHeader(presetQuestion, out var questionContainer);
+                {Title = "Genre of your Game", Description = description, IsMandatory = true};
+
+            var questionView = GetQuestionHeader(presetQuestion, out var questionContainer);
             questionContainer.Add(PresetDropdown());
             return questionView;
         }
@@ -101,7 +117,7 @@ namespace Unity.Multiplayer.Center.Window.UI
             presetDropdown.BindProperty(prop);
             presetDropdown.RegisterValueChangedCallback(RaiseValueChangedCallback);
             presetDropdown.name = "preset-dropdown";
-            presetDropdown.tooltip ="Select your game type";
+            presetDropdown.tooltip = "Select your game type";
             return presetDropdown;
         }
 
@@ -109,6 +125,11 @@ namespace Unity.Multiplayer.Center.Window.UI
         {
             if (!Equals(eventData.newValue, eventData.previousValue))
                 OnPresetSelected?.Invoke((Preset) eventData.newValue);
+        }
+        
+        public void SetAdvancedSectionVisible (bool isVisible){
+            var advanced = ContentRoot.Q<Foldout>(k_AdvancedFoldoutName);
+            advanced.style.display = isVisible ? new StyleEnum<DisplayStyle>(DisplayStyle.Flex) : new StyleEnum<DisplayStyle>(DisplayStyle.None);
         }
     }
 }

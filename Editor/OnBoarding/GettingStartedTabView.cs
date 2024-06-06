@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using Unity.Multiplayer.Center.Analytics;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Onboarding;
 using Unity.Multiplayer.Center.Questionnaire;
@@ -8,6 +10,10 @@ using UnityEngine.UIElements;
 
 namespace Unity.Multiplayer.Center.Window
 {
+    /// <summary>
+    /// This is the main view for the Quickstart tab.
+    /// Note that in the code, the Quickstart tab is referred to as the Getting Started tab.
+    /// </summary>
     [Serializable]
     internal class GettingStartedTabView : ITabView
     {
@@ -29,14 +35,17 @@ namespace Unity.Multiplayer.Center.Window
         /// </summary>
         [SerializeField]
         AvailableSectionTypes m_LastFoundSectionTypes;
+        
+        public IMultiplayerCenterAnalytics MultiplayerCenterAnalytics { get; set; }
 
-        public GettingStartedTabView(string name = "Getting Started")
+        public GettingStartedTabView(string name = "Quickstart")
         {
             Name = name;
         }
 
         public void Refresh()
         {
+            Debug.Assert(MultiplayerCenterAnalytics != null, "MultiplayerCenterAnalytics != null");
             UserChoicesObject.instance.OnSolutionSelectionChanged -= NotifyChoicesChanged;
             UserChoicesObject.instance.OnSolutionSelectionChanged += NotifyChoicesChanged;
             
@@ -50,11 +59,11 @@ namespace Unity.Multiplayer.Center.Window
             }
             else if(RootVisualElement == null || RootVisualElement.childCount == 0)
             {
-                CreateViews();
+                CreateViews(); 
             }
         }
 
-        public void Clear() 
+        public void Clear()
         {
             RootVisualElement?.Clear();
             if (m_Sections == null)
@@ -108,6 +117,13 @@ namespace Unity.Multiplayer.Center.Window
                         currentContainer = StartNewSection(scrollView, thisSectionCategory);
                         scrollView.Add(currentContainer);
                         currentCategory = thisSectionCategory;
+                    }
+
+                    if (section is ISectionWithAnalytics sectionWithAnalytics)
+                    {   
+                        var attribute = section.GetType().GetCustomAttribute<OnboardingSectionAttribute>();
+                        sectionWithAnalytics.AnalyticsProvider = new OnboardingSectionAnalyticsProvider(MultiplayerCenterAnalytics,
+                            targetPackageId:attribute.TargetPackageId, sectionId: attribute.Id);  
                     }
                     
                     section.Load();

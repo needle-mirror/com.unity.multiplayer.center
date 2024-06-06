@@ -3,7 +3,7 @@ using Unity.Multiplayer.Center.Window;
 using UnityEditor;
 using UnityEngine;
 
-namespace MultiplayerCenterTests
+namespace Unity.MultiplayerCenterTests
 {
     [TestFixture]
     class MultiplayerCenterWindowTests
@@ -46,12 +46,7 @@ namespace MultiplayerCenterTests
         [TearDown]
         public void TearDown()
         {
-            var window = EditorWindow.GetWindow<MultiplayerCenterWindow>();
-            if (window != null)
-            {
-                window.Close();
-                Object.DestroyImmediate(window);
-            }
+            MultiplayerCenterTestUtils.CloseMultiplayerCenterWindow();
         }
     }
 }

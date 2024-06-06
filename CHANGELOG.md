@@ -3,6 +3,17 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2024-06-06
+
+### Added
+- Added analytics to the package
+
+### Changed
+- **New user interface for the recommendations tab**
+- Multiplayer Center no longer upgrades packages that are embedded, linked locally, installed via Git or local Tarball
+- Window can now be found under `Window > Multiplayer > Multiplayer Center`
+- Updated the recommendation of the Widgets package (only compatible with Netcode for GameObjects at the moment)
+- Updated the tooltips and various texts in the recommendations tab 
 
 ## [0.2.1] - 2024-04-25
 
@@ -10,7 +21,7 @@ Non user-facing changes only
 
 ## [0.2.0] - 2024-04-24
 
-** Added **
+**Added**
 
 - Automatic installation of the Getting Started content.
 - Changed API for the getting started content.

@@ -12,6 +12,11 @@ namespace Unity.Multiplayer.Center.Questionnaire
     internal class UserChoicesObject : ScriptableSingleton<UserChoicesObject>
     {
         /// <summary>
+        /// The version of the questionnaire the answers correspond to.
+        /// </summary>
+        public string QuestionnaireVersion;
+        
+        /// <summary>
         /// The answers of the user in the Game specs questionnaire.
         /// </summary>
         public AnswerData UserAnswers = new();
@@ -48,7 +53,11 @@ namespace Unity.Multiplayer.Center.Questionnaire
         /// </summary>
         internal void Save()
         {
+            QuestionnaireVersion = QuestionnaireObject.instance.Questionnaire.Version;
             this.Save(true); 
         }
+        
+        internal string FilePath => GetFilePath();
+
     }
 }

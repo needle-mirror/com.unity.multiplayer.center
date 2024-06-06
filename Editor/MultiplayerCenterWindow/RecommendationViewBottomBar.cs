@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Multiplayer.Center.Analytics;
 using Unity.Multiplayer.Center.Onboarding;
+using Unity.Multiplayer.Center.Questionnaire;
 using Unity.Multiplayer.Center.Recommendations;
 using Unity.Multiplayer.Center.Window.UI;
 using UnityEditor;
@@ -13,35 +15,26 @@ namespace Unity.Multiplayer.Center.Window
     {
         readonly Label m_PackageCount;
         readonly Button m_InstallPackageButton;
-        readonly VisualElement m_SpinningIcon;
+        
+        IMultiplayerCenterAnalytics m_Analytics;
 
         MultiplayerCenterWindow m_Window = EditorWindow.GetWindow<MultiplayerCenterWindow>();
         List<PackageDetails> m_PackagesToInstall = new ();
+        RecommendationViewData m_RecommendationViewData;
+        SolutionsToRecommendedPackageViewData m_SolutionToPackageData;
 
-        public RecommendationViewBottomBar()
+        public RecommendationViewBottomBar(IMultiplayerCenterAnalytics analytics)
         {
+            m_Analytics = analytics;
             name = "bottom-bar";
             m_PackageCount = new Label {name = "package-count"};
 
             // Setup Install Button
             m_InstallPackageButton = new Button(OnInstallButtonClicked) {text = "Install Packages"};
             m_InstallPackageButton.AddToClassList(StyleClasses.NextStepButton);
-
-            // Setup Spinning Icon
-            m_SpinningIcon = new VisualElement();
-            m_SpinningIcon.AddToClassList("icon");
-
-            // if we are current already processing an installation, show the spinning icon
-            if (!PackageManagement.IsInstallationFinished())
-            {
-                m_SpinningIcon.AddToClassList("processing");
-            };
             
-            m_SpinningIcon.AddToClassList(StyleClasses.NextStepButton);
-
-            // Put the button and the spinning icon in a container
+            // Put the button in a container
             var installPackageContainer = new VisualElement() {name = "install-package-container"};
-            installPackageContainer.Add(m_SpinningIcon);
             installPackageContainer.Add(m_InstallPackageButton);
 
             Add(m_PackageCount);
@@ -52,8 +45,16 @@ namespace Unity.Multiplayer.Center.Window
         {
             if (!PackageManagement.IsAnyMultiplayerPackageInstalled() || WarnDialogForPackageInstallation())
             {
+                SendInstallationAnalyticsEvent();
                 InstallSelectedPackagesAndExtension();
             }
+        }
+
+        void SendInstallationAnalyticsEvent()
+        {
+            var answerObject = UserChoicesObject.instance;
+            m_Analytics.SendInstallationEvent(answerObject.UserAnswers, answerObject.Preset,
+                AnalyticsUtils.GetPackagesWithAnalyticsFormat(m_RecommendationViewData, m_SolutionToPackageData));
         }
 
         bool WarnDialogForPackageInstallation()
@@ -66,8 +67,9 @@ namespace Unity.Multiplayer.Center.Window
 
         void InstallSelectedPackagesAndExtension()
         {
+            m_Window.SetSpinnerIconRotating();
             m_Window.rootVisualElement.SetEnabled(false);
-            m_SpinningIcon.AddToClassList("processing");
+
             var toInstall = m_PackagesToInstall.ConvertAll(p => p.Id);
             toInstall.Add(QuickstartIsMissingView.PackageId);
             PackageManagement.InstallPackages(toInstall, onAllInstalled: OnInstallationFinished);
@@ -76,11 +78,14 @@ namespace Unity.Multiplayer.Center.Window
         void OnInstallationFinished(bool success)
         {
             m_Window.RequestShowGettingStartedTabAfterDomainReload();
-            m_SpinningIcon.RemoveFromClassList("processing");
+            m_Window.RemoveSpinnerIconRotating();
         }
 
-        public void UpdatePackagesToInstall(List<RecommendedPackageViewData> packages)
+        public void UpdatePackagesToInstall(RecommendationViewData data, SolutionsToRecommendedPackageViewData packageViewData)
         {
+            m_RecommendationViewData = data;
+            m_SolutionToPackageData = packageViewData;
+            var packages = RecommendationUtils.PackagesToInstall(data, packageViewData);
             m_PackagesToInstall = RecommendationUtils.GetPackagesWithAdditionalPackages(packages.Select(p => p.PackageId).ToList(), out var toolTip);
             m_PackageCount.tooltip = toolTip;
 

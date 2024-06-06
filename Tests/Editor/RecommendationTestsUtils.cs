@@ -6,7 +6,7 @@ using Unity.Multiplayer.Center.Questionnaire;
 using Unity.Multiplayer.Center.Recommendations;
 using UnityEngine;
 
-namespace Unity.MultiplayerCenterTests.Recommendations
+namespace Unity.MultiplayerCenterTests
 {
     internal static class RecommendationTestsUtils
     {
@@ -27,7 +27,7 @@ namespace Unity.MultiplayerCenterTests.Recommendations
             var answerData = new AnswerData();
             foreach (var question in questionnaireData.Questions)
             {
-                var middleChoice = question.Choices[question.Choices.Length / 2];
+                var middleChoice = question.Choices[question.Choices.Length / 2 - 1];
                 var answeredQuestion = new AnsweredQuestion()
                 {
                     QuestionId = question.Id,
@@ -38,41 +38,40 @@ namespace Unity.MultiplayerCenterTests.Recommendations
 
             return answerData;
         }
+        
+        public static RecommendationViewData GetSomeRecommendation()
+        {
+            var questionnaireData = GetProjectQuestionnaire();
+            var answerData = BuildAnswerMatching(questionnaireData);
+            return RecommenderSystem.GetRecommendation(questionnaireData, answerData);
+        }
 
         public static void AssertRecommendedSolutionNotNull(RecommendedSolutionViewData solution, bool checkMainPackage = true)
         {
             Assert.NotNull(solution);
             Assert.False(string.IsNullOrEmpty(solution.Title));
-            Assert.NotNull(solution.AssociatedFeatures);
             Assert.That(solution.RecommendationType is RecommendationType.MainArchitectureChoice 
-                or RecommendationType.SecondArchitectureChoice or RecommendationType.NotRecommended);
+                or RecommendationType.SecondArchitectureChoice or RecommendationType.NotRecommended or RecommendationType.Incompatible, $"Recommendation type: {solution.RecommendationType}");
             if (checkMainPackage)
                 Assert.NotNull(solution.MainPackage);
         }
 
-        public static void AssertAllRecommendedPackageNotNull(RecommendedSolutionViewData solution)
+        public static void AssertAllRecommendedPackageNotNull(SolutionsToRecommendedPackageViewData allPackages)
         {
-            var solutionName = solution.Title;
-            foreach (var package in solution.AssociatedFeatures)
+            foreach (var selection in allPackages.Selections)
             {
-                Assert.NotNull(package, solutionName);
-                Assert.False(string.IsNullOrEmpty(package.Name), solutionName);
-                Assert.NotNull(string.IsNullOrEmpty(package.PackageId), $"{solutionName} - {package.Name}");
-                Assert.That(package.RecommendationType != RecommendationType.MainArchitectureChoice &&
-                    package.RecommendationType != RecommendationType.SecondArchitectureChoice, $"{solutionName} - {package.Name}");
+                var packages = allPackages.GetPackagesForSelection(selection);
+                var selectionString = $"Netcode {selection.Netcode} - Hosting {selection.HostingModel}";
+                Assert.NotNull(packages, selectionString);
+                CollectionAssert.IsNotEmpty(packages, selectionString);
+                foreach (var package in packages)
+                {
+                    Assert.False(string.IsNullOrEmpty(package.Name), selectionString);
+                    Assert.NotNull(string.IsNullOrEmpty(package.PackageId), $"{selectionString} - {package.Name}");
+                    Assert.That(package.RecommendationType != RecommendationType.MainArchitectureChoice &&
+                        package.RecommendationType != RecommendationType.SecondArchitectureChoice, $"{selectionString} - {package.Name}");    
+                }
             }
-        }
-        
-        /// <summary>
-        /// All solutions should have the same number of associated packages.
-        /// Even if they are not recommended or incompatible they are still always shown as to not visually disturb
-        /// the view when switching between solutions.
-        /// </summary>
-        /// <param name="sol1">Solution 1</param>
-        /// <param name="sol2">Solution 2</param>
-        public static void AssertRecommendationsHaveSameNumberOfPackages(RecommendedSolutionViewData sol1, RecommendedSolutionViewData sol2)
-        {
-            Assert.AreEqual(sol1.AssociatedFeatures.Length, sol2.AssociatedFeatures.Length);
         }
 
         /// <summary>
@@ -81,20 +80,20 @@ namespace Unity.MultiplayerCenterTests.Recommendations
         /// Note: this a current requirement, but this might evolve. Adapt if necessary.
         /// 2nd Note: With the introduction of the Multiplayer SDK this requirement changed for the server architecture options, but not for the netcode options.
         /// </summary>
-        /// <param name="sol1">Solution 1</param>
-        /// <param name="sol2">Solution 2</param>
-        public static void AssertSamePackagesWithDifferentRecommendations(RecommendedSolutionViewData sol1, RecommendedSolutionViewData sol2)
+        /// <param name="reco1">Solution 1</param>
+        /// <param name="reco2">Solution 2</param>
+        public static void AssertSamePackagesWithDifferentRecommendations(RecommendedPackageViewData[] reco1,  RecommendedPackageViewData[] reco2, string msg)
         {
-            AssertRecommendationsHaveSameNumberOfPackages(sol1, sol2);
+            Assert.AreEqual(reco1.Length, reco2.Length);
             var allTheSame = true;
-            foreach (var p in sol1.AssociatedFeatures)
+            foreach (var p in reco1)
             {
-                var matching = sol2.AssociatedFeatures.FirstOrDefault(x => x.PackageId == p.PackageId);
+                var matching = reco2.FirstOrDefault(x => x.PackageId == p.PackageId);
                 Assert.IsNotNull(matching);
                 if(matching.RecommendationType != p.RecommendationType)
                     allTheSame = false;
             }
-            Assert.False(allTheSame, $"The two solutions have exactly the same recommended packages! Solution 1: {sol1.Title}, Solution 2: {sol2.Title}"); 
+            Assert.False(allTheSame, $"The two solutions have exactly the same recommended packages!"); 
         }
 
         public static T Clone<T>(T obj)

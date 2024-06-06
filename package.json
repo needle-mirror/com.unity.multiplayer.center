@@ -1,7 +1,7 @@
 {
   "name": "com.unity.multiplayer.center",
   "displayName": "Multiplayer Center",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "unity": "6000.0",
   "unityRelease": "0b16",
   "description": "The multiplayer center provides a starting point to create a multiplayer game. It will recommend specific packages and enable you to easily access samples and documentation.",
@@ -15,15 +15,15 @@
     "Tools"
   ],
   "_upm": {
-    "changelog": "Non user-facing changes only"
+    "changelog": "### Added\n- Added analytics to the package\n\n### Changed\n- **New user interface for the recommendations tab**\n- Multiplayer Center no longer upgrades packages that are embedded, linked locally, installed via Git or local Tarball\n- Window can now be found under `Window > Multiplayer > Multiplayer Center`\n- Updated the recommendation of the Widgets package (only compatible with Netcode for GameObjects at the moment)\n- Updated the tooltips and various texts in the recommendations tab"
   },
   "upmCi": {
-    "footprint": "660602cfa69890dd7c7749a0e96e4cbb98b63e36"
+    "footprint": "c42b460966262252ed5ec57793ea437128b6c679"
   },
-  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.multiplayer.center@0.2/manual/index.html",
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.multiplayer.center@0.3/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/com.unity.multiplayer.center.git",
     "type": "git",
-    "revision": "d6c8dbb0ccbe86bd459f05e72a451f6100c07cf1"
+    "revision": "ca71e8d8260955dce27aec74291e53f8ff08ea1a"
   }
 }

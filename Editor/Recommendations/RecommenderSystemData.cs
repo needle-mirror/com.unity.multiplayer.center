@@ -11,10 +11,13 @@ namespace Unity.Multiplayer.Center.Recommendations
     [Serializable]
     internal class RecommenderSystemData
     {
+        /// <summary>
+        /// The Unity version for which this recommendation data is valid.
+        /// </summary>
         public string TargetUnityVersion;
 
         /// <summary>
-        /// Stores all the recommended solutions.
+        /// Stores all the recommended solutions. This is serialized.
         /// </summary>
         public RecommendedSolution[] RecommendedSolutions;
 
@@ -47,26 +50,125 @@ namespace Unity.Multiplayer.Center.Recommendations
             }
         }
 
+        /// <summary>
+        /// Checks for incompatibility between the netcode and hosting model.
+        /// </summary>
+        /// <param name="netcode">The netcode type</param>
+        /// <param name="hostingModel">The hosting model</param>
+        /// <param name="reason">The reason for the incompatibility, filled when this function returns false.</param>
+        /// <returns>True if compatible (default), False otherwise</returns>
+        public bool IsHostingModelCompatibleWithNetcode(PossibleSolution netcode, PossibleSolution hostingModel, out string reason)
+        {
+            m_IncompatibleHostingModels ??= Utils.ToDictionary(RecommendedSolutions);
+            return !m_IncompatibleHostingModels.TryGetValue(new SolutionSelection(netcode, hostingModel), out reason);
+        }
+
         Dictionary<string, PackageDetails> m_PackageDetailsById;
         Dictionary<PossibleSolution, RecommendedSolution> m_SolutionsByType;
+        Dictionary<SolutionSelection, string> m_IncompatibleHostingModels;
     }
 
+    [Serializable]
+    internal struct SolutionSelection
+    {
+        public PossibleSolution Netcode;
+        public PossibleSolution HostingModel;
+        public SolutionSelection(PossibleSolution netcode, PossibleSolution hostingModel)
+        {
+            Netcode = netcode;
+            HostingModel = hostingModel;
+        }
+    }
+    
+    /// <summary>
+    /// A possible solution and whether packages are recommended or not
+    /// </summary>
     [Serializable]
     internal class RecommendedSolution
     {
+        /// <summary>
+        /// The type of solution
+        /// </summary>
         public PossibleSolution Type;
+        
+        /// <summary>
+        ///  The name of the solution as shown in the UI.
+        /// </summary>
         public string Title;
-        public string MainPackageId; // only id because scoring will impact the rest
+        
+        /// <summary>
+        /// Optional package ID associated with that solution (e.g. a netcode package or the cloud code package).
+        /// Use this field if the package has to mandatorily be installed when the solution is selected. 
+        /// </summary>
+        public string MainPackageId;// only id because scoring will impact the rest
+        
+        /// <summary>
+        /// Url to documentation describing the solution.
+        /// </summary>
         public string DocUrl;
+        
+        /// <summary>
+        /// Short description of the solution.
+        /// </summary>
         public string ShortDescription;
+        
+        /// <summary>
+        /// The packages and the associated recommendation type.
+        /// If the Type is a netcode Type, all the possible packages should be in this array.
+        /// If the Type is a hosting model, this will contain only overrides in case a package is incompatible or
+        /// featured for the hosting model.
+        /// </summary>
         public RecommendedPackage[] RecommendedPackages;
+        
+        /// <summary>
+        /// Solutions that are incompatible with this solution.
+        /// Typically used for netcode solutions.
+        /// </summary>
+        public IncompatibleSolution[] IncompatibleSolutions = Array.Empty<IncompatibleSolution>();
     }
 
+    /// <summary>
+    /// Stores why a solution is incompatible with something and why.
+    /// </summary>
+    [Serializable]
+    internal class IncompatibleSolution
+    {
+        /// <summary>
+        /// What is incompatible.
+        /// </summary>
+        public PossibleSolution Solution;
+        
+        /// <summary>
+        /// Why it is incompatible.
+        /// </summary>
+        public string Reason;
+        
+        public IncompatibleSolution(PossibleSolution solution, string reason)
+        {
+            Solution = solution;
+            Reason = reason;
+        }
+    }
+
+    /// <summary>
+    /// A package, whether it is recommended or not (context dependent), and why.
+    /// </summary>
     [Serializable]
     internal class RecommendedPackage
     {
+        /// <summary>
+        /// The package id (e.g. com.unity.netcode)
+        /// </summary>
         public string PackageId;
+        
+        /// <summary>
+        /// Whether it is recommended or not.
+        /// </summary>
         public RecommendationType Type;
+        
+        /// <summary>
+        /// Why it is recommended or not.
+        /// </summary>
         public string Reason;
 
         public RecommendedPackage(string packageId, RecommendationType type, string reason)
@@ -84,7 +186,7 @@ namespace Unity.Multiplayer.Center.Recommendations
         public string Name;
         public string ShortDescription;
         public string DocsUrl;
-        public string [] AdditionalPackages;
+        public string[] AdditionalPackages;
 
         /// <summary>
         /// Details about the package.
@@ -113,6 +215,21 @@ namespace Unity.Multiplayer.Center.Recommendations
             foreach (var item in array)
             {
                 result[keySelector(item)] = item;
+            }
+
+            return result;
+        }
+        
+        public static Dictionary<SolutionSelection, string> ToDictionary(RecommendedSolution[] solutions)
+        {
+            var result = new Dictionary<SolutionSelection, string>();
+            foreach (var recommendedSolution in solutions)
+            {
+                foreach (var incompatibleHostingModel in recommendedSolution.IncompatibleSolutions)
+                {
+                    var key = new SolutionSelection(recommendedSolution.Type, incompatibleHostingModel.Solution);
+                    result.Add(key, incompatibleHostingModel.Reason);
+                }
             }
 
             return result;

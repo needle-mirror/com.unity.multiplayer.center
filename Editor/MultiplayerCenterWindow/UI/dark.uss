@@ -4,12 +4,14 @@
 :root {
     --package-icon: url('Icons/d_Package.png');
     --questionnaire-icon: url('Icons/d_Questionnaire.png');
-    --questionnaire-group-icon: url('Icons/GroupBox.png');
+    --package-manager-icon: url('Icons/d_PackageManager.png');
+    --package-installed-icon: url('Icons/d_PackageInstalled.png');
     --info-icon: resource('d__Help');
-    --standard-blue: #57AEFF;
     --comment-color: dimgrey;
     --highlight-background-color: #2a2a2a;
     --colors-incompatible-background: #FFC107;
+    --recommendation-badge-color: #69E39F;
+    --card-poster-image-bg-color: #222222;
     --theme-slider-background-color:#5E5E5E; /* From Default common dark uss */
     --badge-color-grey:#C4C4C4; /* From Default common dark uss, feedback color */
 }

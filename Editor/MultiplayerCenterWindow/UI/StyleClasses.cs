@@ -8,18 +8,6 @@ namespace Unity.Multiplayer.Center.Window.UI
         /// <summary> Game spec standard question </summary>
         public const string QuestionView = "question-view";
         
-        /// <summary> Question view for the welcome screen </summary>
-        public const string WelcomeScreenQuestionView = "question-view__horizontal";
-        
-        /// <summary> Container for question view for the welcome screen </summary>
-        public const string WelcomeScreenQuestionViewContainer = "question-view__horizontal-container";
-        
-        /// <summary> Header of question view for the welcome screen </summary>
-        public const string WelcomeScreenQuestionViewHeader = "question-view__horizontal-header";
-        
-        /// <summary> Title of question view for the welcome screen </summary>
-        public const string WelcomeScreenQuestionViewTitle = "question-view__horizontal-title";
-        
         /// <summary> Game spec mandatory question, highlighted </summary>
         public const string MandatoryQuestion = "mandatory-question";
         

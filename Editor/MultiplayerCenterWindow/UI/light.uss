@@ -4,12 +4,18 @@
 :root {
     --package-icon: url('Icons/Package.png');
     --questionnaire-icon: url('Icons/Questionnaire.png');
-    --questionnaire-group-icon: url('Icons/GroupBox.png');
+    --package-manager-icon: url('Icons/PackageManager.png');
+    --package-installed-icon: url('Icons/PackageInstalled.png');
     --info-icon: resource('_Help');
-    --standard-blue: #0F49BD;
     --colors-incompatible-background: #C99700;
     --comment-color: darkgray;
     --highlight-background-color: #f2f2f2;
+    --card-poster-image-bg-color: #555555;
+    --recommendation-badge-color: #00876A;
     --theme-slider-background-color: #8F8F8F; /* From Default common light uss */
     --badge-color-grey:#555555; /* From Default common light uss, feedback color */
+}
+
+.color-recommendation-badge {
+   background-color: #eeeeee;
 }

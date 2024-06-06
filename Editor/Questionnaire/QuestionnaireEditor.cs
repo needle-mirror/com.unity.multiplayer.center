@@ -19,13 +19,13 @@ namespace Unity.Multiplayer.Center.Questionnaire
             var so = new SerializedObject(target);
             var root = new VisualElement();
             var questionnaire = (QuestionnaireObject) target;
-            root.Add(new Button(() => questionnaire.ForceSave()){text = "Apply changes"});
-            var defaultInspector = new VisualElement();
-            InspectorElement.FillDefaultInspector(defaultInspector, so, this);
-            root.Add(defaultInspector);
+            root.Add(new Button(() => questionnaire.ForceReload() ){text = "Load Changes From Disk", tooltip = "Use when editing with external editor."});
+            root.Add(new Button(() => questionnaire.ForceSave() ){text = "Save local changes", tooltip = "Use when editing in inspector."});
+            var inspector = new PropertyField(so.FindProperty("Questionnaire"));
+            root.Add(inspector);
             return root;
         }
-
+        
         [OnOpenAsset(1)]
         public static bool OpenMyCustomAsset(int instanceID, int line)
         {
@@ -34,7 +34,7 @@ namespace Unity.Multiplayer.Center.Questionnaire
             var path = AssetDatabase.GetAssetPath(asset);
             if(string.IsNullOrEmpty(path) || !path.EndsWith("questionnaire"))
                 return false;
-
+        
             Selection.activeObject = QuestionnaireObject.instance;
             return true;
         }

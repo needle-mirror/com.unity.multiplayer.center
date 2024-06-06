@@ -26,9 +26,14 @@ namespace Unity.Multiplayer.Center.Recommendations
         SecondArchitectureChoice,
 
         /// <summary>
-        /// Optional and highlighted, such as Vivox
+        /// Associated feature in the Netcode section
         /// </summary>
-        OptionalFeatured,
+        NetcodeFeatured,
+        
+        /// <summary>
+        /// Associated feature in the Hosting Model section
+        /// </summary>
+        HostingFeatured,
 
         /// <summary>
         /// Optional but not highlighted
@@ -44,5 +49,22 @@ namespace Unity.Multiplayer.Center.Recommendations
         /// Incompatible with the user intent. Might even break something, we need to warn the user
         /// </summary>
         Incompatible,
+        
+        /// <summary>
+        /// Packages that are not visible for the User but useful for the analytics
+        /// </summary>
+        Hidden
+    }
+    
+    internal static class RecommendationTypeExtensions
+    {
+        public static bool IsRecommendedPackage(this RecommendationType type)
+            => type is RecommendationType.OptionalStandard or RecommendationType.NetcodeFeatured or RecommendationType.HostingFeatured;
+        
+        public static bool IsRecommendedSolution(this RecommendationType type)
+            => type is RecommendationType.MainArchitectureChoice;
+        
+        public static bool IsInstallableAsDirectDependency(this RecommendationType type)
+            => type is not RecommendationType.Incompatible and not RecommendationType.Hidden;
     }
 }

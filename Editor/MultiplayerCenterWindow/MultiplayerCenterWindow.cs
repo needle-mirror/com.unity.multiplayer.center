@@ -1,5 +1,6 @@
 using System;
-using Unity.Multiplayer.Center.UI.RecommendationView;
+using Unity.Multiplayer.Center.Analytics;
+using Unity.Multiplayer.Center.Window.UI.RecommendationView;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,10 +10,14 @@ namespace Unity.Multiplayer.Center.Window
     internal class MultiplayerCenterWindow : EditorWindow
     {
         const string k_PathInPackage = "Packages/com.unity.multiplayer.center/Editor/MultiplayerCenterWindow";
+        const string k_SpinnerClassName = "processing";
+
+        VisualElement m_SpinningIcon;
 
         Vector2 m_WindowSize = new(500, 400);
 
         public int CurrentTab => m_TabGroup.CurrentTab;
+
 
         // Testing purposes only. We don't want to set CurrentTab from window
         internal int CurrentTabTest
@@ -24,10 +29,21 @@ namespace Unity.Multiplayer.Center.Window
         [SerializeField]
         bool m_RequestGettingStartedTabAfterDomainReload = false;
 
+        // Distributed Authority is only available in experimental, therefore for now we hide it. 
+        // This should be a temporary hack. 
+        internal const bool IgnoreDistributedAuthority = true;
+
         [SerializeField]
         TabGroup m_TabGroup;
 
-        [MenuItem("Window/Multiplayer Center")]
+        /// <summary>
+        /// This is the reference Multiplayer Center analytics implementation. This class owns it.
+        /// </summary>
+        IMultiplayerCenterAnalytics m_MultiplayerCenterAnalytics;
+
+        IMultiplayerCenterAnalytics MultiplayerCenterAnalytics => m_MultiplayerCenterAnalytics ??= MultiplayerCenterAnalyticsFactory.Create();
+
+        [MenuItem("Window/Multiplayer/Multiplayer Center")]
         public static void OpenWindow()
         {
             bool showUtility = false; // TODO: figure out if it would be a good idea to have a utility window (always on top, cannot be tabbed)
@@ -57,12 +73,15 @@ namespace Unity.Multiplayer.Center.Window
         {
             rootVisualElement.Clear();
             rootVisualElement.name = "root";
+            m_SpinningIcon = new VisualElement();
             var theme = EditorGUIUtility.isProSkin ? "dark" : "light";
             rootVisualElement.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>($"{k_PathInPackage}/UI/{theme}.uss"));
             rootVisualElement.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>($"{k_PathInPackage}/UI/MultiplayerCenterWindow.uss"));
 
             if (m_TabGroup == null || m_TabGroup.ViewCount < 1)
-                m_TabGroup = new TabGroup(new ITabView[] {new RecommendationTabView(), new GettingStartedTabView()});
+                m_TabGroup = new TabGroup(MultiplayerCenterAnalytics, new ITabView[] {new RecommendationTabView(), new GettingStartedTabView()});
+            else // since we are not serializing the analytics provider, we need to set it again
+                m_TabGroup.MultiplayerCenterAnalytics = MultiplayerCenterAnalytics;
 
             m_TabGroup.CreateTabs();
             rootVisualElement.Add(m_TabGroup.Root);
@@ -79,7 +98,7 @@ namespace Unity.Multiplayer.Center.Window
             {
                 m_TabGroup.SetSelected(m_TabGroup.CurrentTab, force: true);
             }
-            
+
             SetRootElementEnabled(shouldEnable);
         }
 
@@ -87,6 +106,21 @@ namespace Unity.Multiplayer.Center.Window
         {
             var isInstallationFinished = PackageManagement.IsInstallationFinished();
             rootVisualElement.SetEnabled(isInstallationFinished || shouldEnable);
+
+            // if we are current already processing an installation, show the spinning icon
+            if (!isInstallationFinished)
+                SetSpinnerIconRotating();
+            rootVisualElement.Add(m_SpinningIcon);
+        }
+        
+        internal void SetSpinnerIconRotating()
+        {
+            m_SpinningIcon.AddToClassList(k_SpinnerClassName);
+        }
+
+        internal void RemoveSpinnerIconRotating()
+        {
+            m_SpinningIcon?.RemoveFromClassList(k_SpinnerClassName);
         }
 
         void OnDestroy()

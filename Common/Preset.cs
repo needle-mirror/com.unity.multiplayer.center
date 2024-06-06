@@ -16,37 +16,70 @@ namespace Unity.Multiplayer.Center.Common
         [InspectorName("-")]
         None,
         
+        /// <summary>
+        /// Adventure genre.
+        /// </summary>
         [InspectorName("Adventure")]
         Adventure,
         
+        /// <summary>
+        /// Shooter, Battle Royale, Battle Arena genre.
+        /// </summary>
         [InspectorName("Shooter, Battle Royale, Battle Arena")]
         Shooter,
         
+        /// <summary>
+        /// Racing genre.
+        /// </summary>
         [InspectorName("Racing")]
         Racing,
         
-        [InspectorName("Turn-based, Card Battle, Tabletop")]
+        /// <summary>
+        /// Card Battle, Turn-based, Tabletop genre.
+        /// </summary>
+        [InspectorName("Card Battle, Turn-based, Tabletop")]
         TurnBased,
         
+        /// <summary>
+        /// Simulation genre.
+        /// </summary>
         [InspectorName("Simulation")]
         Simulation,
         
+        /// <summary>
+        /// Strategy genre.
+        /// </summary>
         [InspectorName("Strategy")]
         Strategy,
         
+        /// <summary>
+        /// Sports genre.
+        /// </summary>
         [InspectorName("Sports")]
         Sports,
 
-        [InspectorName("RolePlaying, MMO")]
+        /// <summary>
+        /// Role-Playing, MMO genre.
+        /// </summary>
+        [InspectorName("Role-Playing, MMO")]
         RolePlaying,
         
+        /// <summary>
+        /// Async, Idle, Hyper Casual, Puzzle genre.
+        /// </summary>
         [InspectorName("Async, Idle, Hyper Casual, Puzzle")]
         Async,
         
+        /// <summary>
+        /// Fighting genre.
+        /// </summary>
         [InspectorName("Fighting")]
         Fighting,
         
-        [InspectorName("Sandbox")]
+        /// <summary>
+        /// Arcade, Platformer, Sandbox genre.
+        /// </summary>
+        [InspectorName("Arcade, Platformer, Sandbox")]
         Sandbox
     }
 }

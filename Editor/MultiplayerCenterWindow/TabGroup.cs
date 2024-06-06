@@ -1,4 +1,5 @@
 using System;
+using Unity.Multiplayer.Center.Analytics;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -30,6 +31,11 @@ namespace Unity.Multiplayer.Center.Window
         /// Unregister all events and clear UI Elements
         /// </summary>
         void Clear();
+        
+        /// <summary>
+        /// The Multiplayer Center Analytics provider.
+        /// </summary>
+        IMultiplayerCenterAnalytics MultiplayerCenterAnalytics { get; set; }
     }
 
     [Serializable]
@@ -51,10 +57,27 @@ namespace Unity.Multiplayer.Center.Window
 
         VisualElement m_MainContainer;
 
-        public TabGroup(ITabView[] tabViews, int defaultIndex = 0)
+        IMultiplayerCenterAnalytics m_MultiplayerCenterAnalytics;
+        
+        internal IMultiplayerCenterAnalytics MultiplayerCenterAnalytics 
+        {
+            get => m_MultiplayerCenterAnalytics;
+            set
+            {
+                m_MultiplayerCenterAnalytics = value;
+                foreach (var tabView in m_TabViews)
+                {
+                    if(tabView != null)
+                        tabView.MultiplayerCenterAnalytics = value;
+                }
+            }
+        }
+
+        public TabGroup(IMultiplayerCenterAnalytics analytics, ITabView[] tabViews, int defaultIndex = 0)
         {
             m_TabViews = tabViews;
             CurrentTab = defaultIndex;
+            MultiplayerCenterAnalytics = analytics;
         }
 
         public void SetSelected(int index, bool force = false)

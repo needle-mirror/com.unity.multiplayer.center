@@ -12,6 +12,13 @@ namespace Unity.Multiplayer.Center.Questionnaire
     {
         public QuestionnaireData Questionnaire;
         
+        
+        public void ForceReload()
+        {
+            DestroyImmediate(QuestionnaireObject.instance);
+            var questions = QuestionnaireObject.instance.Questionnaire;
+        }
+        
         public void ForceSave()
         {
             base.Save(saveAsText:true);

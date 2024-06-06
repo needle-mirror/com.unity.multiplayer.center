@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Unity.Multiplayer.Center.UI.RecommendationView;
 using Unity.Multiplayer.Center.Recommendations;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Unity.Multiplayer.Center.Window
+namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
 {
     /// <summary>
     /// View to show one option to the user
@@ -17,10 +16,11 @@ namespace Unity.Multiplayer.Center.Window
 
         BaseBoolField m_RadioButton;
         Label m_PackageNameLabel = new();
-        Label m_ReasonText = new();
+        Label m_Catchphrase = new();
         RecommendationBadge m_RecommendedBadge;
-        InstalledBadge m_InstalledBadge;
+        Image m_PackageManagerIcon;
         Image m_HelpIcon;
+        Image m_InstalledIcon;
 
         /// <summary>
         /// Feature Id stores a unique identifier that identifies the feature.
@@ -49,62 +49,93 @@ namespace Unity.Multiplayer.Center.Window
 
             var topContainerLeft = new VisualElement();
             m_RecommendedBadge = new RecommendationBadge();
-            m_InstalledBadge = new InstalledBadge();
+            
+            m_InstalledIcon = new Image() { name = "icon-package-installed" };
+            m_InstalledIcon.AddToClassList("icon");
+            m_InstalledIcon.AddToClassList("icon-package-installed");
+            m_InstalledIcon.tooltip = "Package is installed";
+            
             topContainerLeft.Add(m_RadioButton);
             topContainerLeft.Add(m_PackageNameLabel);
             topContainerLeft.Add(m_RecommendedBadge);
 
-            topContainerLeft.Add(m_InstalledBadge);
-            topContainerLeft.AddToClassList("recommendation-item-left-container");
+            topContainerLeft.Add(m_InstalledIcon);
+            topContainerLeft.AddToClassList("recommendation-item-top-left-container");
             topContainer.Add(topContainerLeft);
 
             var topContainerRight = new VisualElement();
-            topContainerRight.AddToClassList("recommendation-item-right-container");
+            topContainerRight.AddToClassList("recommendation-item-top-right-container");
 
-            m_HelpIcon = new Image();
-            m_HelpIcon.name = "info-icon";
+            m_HelpIcon = new Image() { name = "info-icon"};
             m_HelpIcon.AddToClassList("icon");
             m_HelpIcon.AddToClassList("icon-questionmark");
+            m_HelpIcon.tooltip = "Open documentation";
             m_HelpIcon.RegisterCallback<ClickEvent>(OpenInBrowser);
             topContainerRight.Add(m_HelpIcon);
 
+            m_PackageManagerIcon = new Image() { name = "package-manager-icon" };
+            m_PackageManagerIcon.AddToClassList("icon");
+            m_PackageManagerIcon.AddToClassList("icon-package-manager");
+            m_PackageManagerIcon.tooltip = "Open Package Manager";
+            m_PackageManagerIcon.RegisterCallback<ClickEvent>(_ => PackageManagement.OpenPackageManager(FeatureId));
+            topContainerRight.Add(m_PackageManagerIcon);
+            
             topContainer.Add(topContainerRight);
             Add(topContainer);
 
             var bottomContainer = new VisualElement();
-            bottomContainer.Add(m_ReasonText);
+            bottomContainer.Add(m_Catchphrase);
             bottomContainer.name = "sub-info-text";
             Add(bottomContainer);
         }
 
-        public void UpdateData(string featureName, string featureId, RecommendedItemViewData item)
+        public void UpdateData(RecommendedPackageViewData package)
         {
+            var featureName = package.Name;
+            var featureId = package.PackageId;
             FeatureId = featureId;
+
+            // temp hack to disable distributed authority without removing it from scoring.
+            if (MultiplayerCenterWindow.IgnoreDistributedAuthority)
+            {
+                var hideDistributedAuthority = featureId.StartsWith("Distributed Authority"); 
+                style.display = hideDistributedAuthority ? DisplayStyle.None : DisplayStyle.Flex;
+            }
             SetFeatureName(featureName);
-            SetIsSelected(item.Selected);
-            SetRecommendationType(item.RecommendationType);
-            SetReasonText(item.Reason);
-            SetDocUrl(item.DocsUrl);
-            SetFeatureShortDescription(item.ShortDescription);
-            SetupInstalledBadge(item, featureId);
+            SetIsSelected(package.Selected);
+            SetRecommendationType(package.RecommendationType);
+            SetReasonText(package.Reason);
+            SetDocUrl(package.DocsUrl);
+            SetCatchPhrase(package.ShortDescription);
+            SetupInstalledIcon(package, featureId);
+            SetupPackageManagerIcon(featureId);
         }
 
-        void SetIsSelected(bool value)
+        void SetupPackageManagerIcon(string featureId)
+        {
+            m_PackageManagerIcon.SetEnabled(!string.IsNullOrEmpty(featureId));
+        }
+
+        internal void SetIsSelected(bool value)
         {
             m_RadioButton.SetValueWithoutNotify(value);
         }
+        
+        internal void SetCheckboxEnabled(bool value)
+        {
+            m_RadioButton.SetEnabled(value);
+        }
 
-        void SetupInstalledBadge(RecommendedItemViewData item, string featureId)
+        void SetupInstalledIcon(RecommendedItemViewData item, string featureId)
         {
             if (!item.IsInstalledAsProjectDependency)
             {
-                m_InstalledBadge.style.display = DisplayStyle.None;
+                m_InstalledIcon.style.display = DisplayStyle.None;
                 return;
             }
 
-            m_InstalledBadge.style.display = DisplayStyle.Flex;
-            m_InstalledBadge.PackageName = featureId;
-            m_InstalledBadge.SetTooltip($"Installed version: {item.InstalledVersion}\nClick to open Package Manager");
+            m_InstalledIcon.style.display = DisplayStyle.Flex;
+            m_InstalledIcon.tooltip = $"Installed version: {item.InstalledVersion}\nClick to open Package Manager";
         }
 
         void SetFeatureName(string value)
@@ -117,7 +148,7 @@ namespace Unity.Multiplayer.Center.Window
             m_RecommendedBadge.SetRecommendationType(value);
             m_RadioButton.SetEnabled(true);
             style.opacity = 1f;
-            if (value == RecommendationType.Incompatible)
+            if (!value.IsInstallableAsDirectDependency())
             {
                 style.opacity = 0.8f;
                 m_RadioButton.SetEnabled(false);
@@ -125,20 +156,24 @@ namespace Unity.Multiplayer.Center.Window
             }
         }
 
+        public void SetRecommendedBadgeVisible(bool value)
+        {
+            m_RecommendedBadge.style.display = value ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+        
         void SetReasonText(string value)
         {
-            m_ReasonText.text = value;
-            m_RecommendedBadge.InfoPopupText = value;
-
-            // Deleted the reason text for now
-            m_ReasonText.style.display = DisplayStyle.None;
-            if (string.IsNullOrEmpty(value))
-                m_ReasonText.style.display = DisplayStyle.None;
+            tooltip = value;
         }
 
-        void SetFeatureShortDescription(string value)
+        void SetCatchPhrase(string value)
         {
-            m_HelpIcon.tooltip = value;
+            m_Catchphrase.text = value;
+
+            // Deleted the reason text for now
+            m_Catchphrase.style.display = DisplayStyle.Flex;
+            if (string.IsNullOrEmpty(value))
+                m_Catchphrase.style.display = DisplayStyle.None;
         }
 
         void SetDocUrl(string url)
@@ -153,65 +188,34 @@ namespace Unity.Multiplayer.Center.Window
             Application.OpenURL(m_DocsUrl);
         }
     }
-
-    internal class InstalledBadge : VisualElement
+    
+    internal class RecommendationBadge : Label
     {
-        Label m_InstalledLabel;
-
-        public string PackageName { get; set; }
-
-        public InstalledBadge()
-        {
-            m_InstalledLabel = new Label("Installed");
-            m_InstalledLabel.AddToClassList("recommended-badge");
-            m_InstalledLabel.AddToClassList("color-grey");
-
-            Add(m_InstalledLabel);
-            RegisterCallback<ClickEvent>(OnBadgeClick);
-        }
-
-        public void SetTooltip(string tooltip)
-        {
-            m_InstalledLabel.tooltip = tooltip;
-        }
-
-        void OnBadgeClick(ClickEvent evt)
-        {
-            // Open the package manager window using the property
-            PackageManagement.OpenPackageManager(PackageName);
-        }
-    }
-
-    internal class RecommendationBadge : VisualElement
-    {
-        Label m_RecommendedLabel;
-        public string InfoPopupText { get; set; }
-
-        List<string> m_PossibleLabelStyles = new List<string>()
+        List<string> m_PossibleLabelStyles = new ()
         {
             "color-grey",
-            "color-blue",
+            "color-recommendation-badge",
         };
 
         public void SetRecommendationType(RecommendationType value)
         {
             style.display = DisplayStyle.Flex;
-            m_PossibleLabelStyles.ForEach(s => m_RecommendedLabel.RemoveFromClassList(s));
+            m_PossibleLabelStyles.ForEach(RemoveFromClassList);
             switch (value)
             {
                 case RecommendationType.MainArchitectureChoice or
-                    RecommendationType.OptionalFeatured or
+                    RecommendationType.NetcodeFeatured or
                     RecommendationType.OptionalStandard:
-                    m_RecommendedLabel.AddToClassList("color-blue");
-                    m_RecommendedLabel.text = "Recommended";
+                    AddToClassList("color-recommendation-badge");
+                    text = "Recommended";
                     break;
                 case RecommendationType.NotRecommended:
-                    m_RecommendedLabel.AddToClassList("color-grey");
-                    m_RecommendedLabel.text = "Not Recommended";
+                    AddToClassList("color-grey");
+                    text = "Not Recommended";
                     break;
                 case RecommendationType.Incompatible:
-                    m_RecommendedLabel.AddToClassList("color-grey");
-                    m_RecommendedLabel.text = "Incompatible";
+                    AddToClassList("color-grey");
+                    text = "Incompatible";
                     break;
                 default:
                     style.display = DisplayStyle.None;
@@ -221,20 +225,7 @@ namespace Unity.Multiplayer.Center.Window
 
         public RecommendationBadge()
         {
-            m_RecommendedLabel = new Label("Recommended");
-            m_RecommendedLabel.AddToClassList("recommended-badge");
-            Add(m_RecommendedLabel);
-            RegisterCallback<ClickEvent>(OnBadgeClick);
-        }
-
-        void OnBadgeClick(ClickEvent evt)
-        {
-            // Show or update the InfoPopup
-            RecommendationInfoPopupSingleton.ShowInfoPopup(this, InfoPopupText);
-
-            // Stop the event from propagating to the Window. Without this, since the badge is 
-            // also on the window, OnWindowClick will be called and the InfoPopup will be hidden.
-            evt.StopPropagation();
+            AddToClassList("recommended-badge");
         }
     }
 }

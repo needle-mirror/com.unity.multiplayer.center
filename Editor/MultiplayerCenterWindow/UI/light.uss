@@ -14,6 +14,12 @@
     --recommendation-badge-color: #00876A;
     --theme-slider-background-color: #8F8F8F; /* From Default common light uss */
     --badge-color-grey:#555555; /* From Default common light uss, feedback color */
+    --pre-release-badge-color: #C99700;
+    --pre-release-badge-color-bg: #F0F0F0;
+    --link-color: #0000f5;
+    --tab-button-highlight-color: black;
+    --onboarding-button-selected-text-color: white;
+    --three-dot-icon: resource("UIBuilderPackageResources/Icons/Light/Inspector/Status/Settings.png");
 }
 
 .color-recommendation-badge {

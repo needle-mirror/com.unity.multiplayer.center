@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
-using UnityEditor.PackageManager.UI;
 using UnityEngine;
 
 namespace Unity.Multiplayer.Center
@@ -13,22 +11,6 @@ namespace Unity.Multiplayer.Center
     {
         static PackageInstaller s_Installer;
         
-        /// <summary>
-        /// Opens the package manager window and hides error
-        /// </summary>
-        public static void OpenPackageManager()
-        {
-            try
-            {
-                UnityEditor.PackageManager.UI.Window.Open("UnityRegistry");
-            }
-            catch (Exception)
-            {
-                // Hide the error in the PackageManager API until the team fixes it
-                // Debug.Log("Error opening Package Manager: " + e.Message);
-            }
-        }
-
         /// <summary>
         /// Opens the package manager window with selected package name and hides error
         /// </summary>
@@ -115,8 +97,22 @@ namespace Unity.Multiplayer.Center
         public static bool IsAnyPackageInstalled(params string[] packageIds)
         {
             var installedPackages = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
-            var hashset = new HashSet<string>(installedPackages.Select(e => e.name));
-            return packageIds.Any(hashset.Contains);
+            var hashset = new HashSet<string>();
+
+            foreach (var package in installedPackages)
+            {
+                hashset.Add(package.name);
+            }
+
+            foreach (var packageId in packageIds)
+            {
+                if (hashset.Contains(packageId))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -147,23 +143,52 @@ namespace Unity.Multiplayer.Center
         /// <summary>
         /// Create a dictionary with package names as keys and versions as values    
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The mapping (package id, installed version) </returns>
         internal static Dictionary<string, string> InstalledPackageDictionary()
         {
             var installedPackages = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
+            var installedPackageDictionary = new Dictionary<string, string>();
 
-            var installedPackageDictionary = installedPackages
-                .Select(e => e.packageId.Split('@'))
-                .Where(e => e.Length == 2)
-                .ToDictionary(e => e[0], e => e[1]);
+            foreach (var package in installedPackages)
+            {
+                var splitPackageId = package.packageId.Split('@');
+                if (splitPackageId.Length == 2)
+                {
+                    installedPackageDictionary[splitPackageId[0]] = splitPackageId[1];
+                }
+            }
 
             return installedPackageDictionary;
+        }
+        
+        internal class VersionChecker
+        {
+            SearchRequest m_Request;
+            public VersionChecker(string packageID)
+            {
+                m_Request = Client.Search(packageID, false);
+                EditorApplication.update += Progress;
+            }
+
+            public event Action<UnityEditor.PackageManager.PackageInfo> OnVersionFound;
+
+            void Progress()
+            {
+                if (!m_Request.IsCompleted) return;
+            
+                EditorApplication.update -= Progress;
+                var foundPackage = m_Request.Result;
+                foreach (var packageInfo in foundPackage)
+                {
+                    OnVersionFound?.Invoke(packageInfo);
+                }
+            }
         }
 
         class PackageInstaller
         {
             Request m_Request;
-            string[] m_PackagesToAddIds = new string[0];
+            string[] m_PackagesToAddIds;
             public event Action<bool> OnInstalled;
 
             public PackageInstaller(string packageId)
@@ -176,47 +201,72 @@ namespace Unity.Multiplayer.Center
 
             public PackageInstaller(IEnumerable<string> packageIds, IEnumerable<string> packageIdsToRemove = null)
             {
+                var packageIdsList = new List<string>();
+                foreach (var id in packageIds)
+                {
+                    packageIdsList.Add(id);
+                }
+                
+                var packageIdsArray = packageIdsList.ToArray();
+                
+                string[] packageIdsToRemoveArray = null;
+                if (packageIdsToRemove != null)
+                {
+                    var packageIdsToRemoveList = new List<string>();
+                    foreach (var id in packageIdsToRemove)
+                    {
+                        packageIdsToRemoveList.Add(id);
+                    }
+                    packageIdsToRemoveArray = packageIdsToRemoveList.ToArray();
+                }
+
                 // Add a package to the project
-                m_Request = Client.AddAndRemove(packageIds.ToArray(), packageIdsToRemove?.ToArray());
-                m_PackagesToAddIds = packageIds.ToArray();
+                m_Request = Client.AddAndRemove(packageIdsArray, packageIdsToRemoveArray);
+                m_PackagesToAddIds = packageIdsArray;
                 EditorApplication.update += Progress;
             }
 
-            public bool IsInstallationFinished()
+            public bool IsCompleted()
             {
                 return m_Request == null || m_Request.IsCompleted;
             }
+            
             void Progress()
             {
                 if (!m_Request.IsCompleted) return;
 
+                EditorApplication.update -= Progress;
                 if (m_Request.Status == StatusCode.Success)
+                {
                     Debug.Log("Installed: " + GetInstalledPackageId());
+                }
                 else if (m_Request.Status >= StatusCode.Failure)
                 {
                     // if the request has more than one package, it will only prompt error message for one  
                     // We should prompt all the failed packages
                     Debug.Log("Package installation request with selected packages: " + String.Join(", ", m_PackagesToAddIds) +
                         " failed. \n Reason: "+ m_Request.Error.message);
-                    
-                    if (m_Request.Error.message.Contains("com.unity.multiplayer.widgets"))
-                    {
-                        Debug.Log("The package is only available in the internal registry. Please make sure you are connected to the company network via VPN.");
-                    }
                 }
 
-                EditorApplication.update -= Progress;
                 OnInstalled?.Invoke(m_Request.Status == StatusCode.Success);
             }
 
             string GetInstalledPackageId()
             {
-                return m_Request switch
+                switch (m_Request)
                 {
-                    AddRequest addRequest => addRequest.Result.packageId,
-                    AddAndRemoveRequest addAndRemoveRequest => string.Join(", ", addAndRemoveRequest.Result.Select(e => e.packageId)),
-                    _ => throw new InvalidOperationException("Unknown request type")
-                };
+                    case AddRequest addRequest:
+                        return addRequest.Result.packageId;
+                    case AddAndRemoveRequest addAndRemoveRequest:
+                        var packageIds = new List<string>();
+                        foreach (var packageInfo in addAndRemoveRequest.Result)
+                        {
+                            packageIds.Add(packageInfo.packageId);
+                        }
+                        return string.Join(", ", packageIds);
+                    default:
+                        throw new InvalidOperationException("Unknown request type");
+                }
             }
         }
 
@@ -226,15 +276,24 @@ namespace Unity.Multiplayer.Center
         /// <returns>True if any package was detected, False otherwise</returns>
         public static bool IsAnyMultiplayerPackageInstalled()
         {
-            var packagesToCheck = new string[]
+            var packagesToCheck = new []
             {
                 "com.unity.netcode",
                 "com.unity.netcode.gameobjects",
                 "com.unity.services.core", // Installed with all package services
-                "com.unity.services.multiplayer"
+                "com.unity.services.multiplayer",
+                "com.unity.transport"
             };
 
-            return packagesToCheck.Any(IsInstalled);
+            foreach (var package in packagesToCheck)
+            {
+                if (IsInstalled(package))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
         
         /// <summary>
@@ -243,7 +302,7 @@ namespace Unity.Multiplayer.Center
         /// <returns>True if there is no current installer instance or installation is finished on the installer</returns>
         public static bool IsInstallationFinished()
         {
-            return s_Installer == null || s_Installer.IsInstallationFinished();
+            return s_Installer == null || s_Installer.IsCompleted();
         }
     }
 }

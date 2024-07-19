@@ -42,6 +42,9 @@ MonoBehaviour:
       ShortDescription: The authority over the game will be distributed across different
         players. This hosting model [dynamic].
       RecommendedPackages:
+      - PackageId: com.unity.services.multiplayer
+        Type: 4
+        Reason: Distributed Authority needs the Multiplayer Services package to work.
       - PackageId: com.unity.dedicated-server
         Type: 7
         Reason: The Dedicated Server package is only useful when you have a dedicated
@@ -105,9 +108,7 @@ MonoBehaviour:
         Type: 5
         Reason: Multiplayer Play Mode enables you to iterate faster by testing locally
           without the need to create builds.
-      IncompatibleSolutions:
-      - Solution: 4
-        Reason: Distributed Authority is not available yet.
+      IncompatibleSolutions: []
     - Type: 1
       Title: Netcode for Entities
       MainPackageId: com.unity.netcode

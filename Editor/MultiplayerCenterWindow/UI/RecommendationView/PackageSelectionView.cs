@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Multiplayer.Center.Recommendations;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -73,12 +72,25 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
                 view.UpdateData(feature);
                 view.OnUserChangedSelection -= OnSelectionChanged;
                 view.OnUserChangedSelection += OnSelectionChanged;
+                
+                // Todo: remove dirty hack to select multiplayer sdk for distributed authority.
+                // i tried to put it as mainPackage but it currently is not really supported, to have a main package that is an optional package
+                // in another hostingmodel choice. It caused issues with analytics.
+                if (this is HostingModelSelectionView)
+                {
+                    if (feature.PackageId == "com.unity.services.multiplayer")
+                    {
+                        view.SetCheckboxEnabled(false);
+                        view.SetIsSelected(true);
+                    }
+                }
             }
         }
         
         void OnSelectionChanged(RecommendationItemView view, bool isSelected)
         {
-            var featureToSet = m_Packages.FirstOrDefault(sol => sol.PackageId == view.FeatureId);
+            var featureToSet = RecommendationUtils.FindRecommendedPackageViewById(m_Packages, view.FeatureId);
+
             if (featureToSet == null)
             {
                 Debug.LogError($"Feature {view.FeatureId} not found");

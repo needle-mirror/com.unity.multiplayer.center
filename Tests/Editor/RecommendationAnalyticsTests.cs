@@ -15,26 +15,26 @@ namespace Unity.MultiplayerCenterTests
         public void OneTimeSetup()  
         {
             // Copy user choices to temp file to restore after tests.
-            MultiplayerCenterTestUtils.CopyUserChoicesToTempFile();
+            UtilsForMultiplayerCenterTests.CopyUserChoicesToTempFile();
         }
         
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
             // restore user choices after tests.
-            MultiplayerCenterTestUtils.RestoreUserChoicesFromTempFile();
+            UtilsForMultiplayerCenterTests.RestoreUserChoicesFromTempFile();
         }
 
         [SetUp]
         public void SetUp()
         {
-            MultiplayerCenterTestUtils.CloseMultiplayerCenterWindow();
+            UtilsForMultiplayerCenterTests.CloseMultiplayerCenterWindow();
         }
         
         [TearDown]
         public void TearDown()
         {
-            MultiplayerCenterTestUtils.CloseMultiplayerCenterWindow();
+            UtilsForMultiplayerCenterTests.CloseMultiplayerCenterWindow();
         }
 
         class MockThatCountsEvents : IMultiplayerCenterAnalytics
@@ -55,7 +55,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void RecommendationTabView_PresetSelectedViaUI_RecommendationEventSent()
         {
-            MultiplayerCenterTestUtils.PopulateUserAnswersForPresetAndPlayerCount(Preset.Async, 4);
+            UtilsForMultiplayerCenterTests.PopulateUserAnswersForPresetAndPlayerCount(Preset.Async, 4);
             
             var view = CreateViewWithMockedAnalytics(out var mock);
 
@@ -70,7 +70,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void RecommendationTabView_NonePresetSelected_RecommendationEventNotSent()
         {
-            MultiplayerCenterTestUtils.PopulateUserAnswersForPresetAndPlayerCount(Preset.Async, 4);
+            UtilsForMultiplayerCenterTests.PopulateUserAnswersForPresetAndPlayerCount(Preset.Async, 4);
             
             var view = CreateViewWithMockedAnalytics(out var mock);
             
@@ -85,7 +85,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void RecommendationTabView_PlayerCountChangedViaUI_RecommendationEventSent()
         {
-            MultiplayerCenterTestUtils.PopulateUserAnswersForPresetAndPlayerCount(Preset.Adventure, 8);
+            UtilsForMultiplayerCenterTests.PopulateUserAnswersForPresetAndPlayerCount(Preset.Adventure, 8);
             
             var view = CreateViewWithMockedAnalytics(out var mock);
             
@@ -93,14 +93,14 @@ namespace Unity.MultiplayerCenterTests
             
             Assert.AreEqual(0, mock.RecommendationEventCount);
             
-            view.QuestionnaireView.QuestionUpdated(MultiplayerCenterTestUtils.CreatePlayerCountAnswer(2));
+            view.QuestionnaireView.QuestionUpdated(UtilsForMultiplayerCenterTests.CreatePlayerCountAnswer(2));
             Assert.AreEqual(1, mock.RecommendationEventCount);
         }
         
         [Test]
         public void RecommendationTabView_NonMandatoryAnswerChangedViaUI_RecommendationEventSent()
         {
-            MultiplayerCenterTestUtils.PopulateUserAnswersForPresetAndPlayerCount(Preset.Adventure, 8);
+            UtilsForMultiplayerCenterTests.PopulateUserAnswersForPresetAndPlayerCount(Preset.Adventure, 8);
             
             var view = CreateViewWithMockedAnalytics(out var mock);
             
@@ -108,7 +108,7 @@ namespace Unity.MultiplayerCenterTests
             
             Assert.AreEqual(0, mock.RecommendationEventCount);
             
-            view.QuestionnaireView.QuestionUpdated(MultiplayerCenterTestUtils.GetAnsweredQuestionThatIsNotInAdventurePreset());
+            view.QuestionnaireView.QuestionUpdated(UtilsForMultiplayerCenterTests.GetAnsweredQuestionThatIsNotInAdventurePreset());
             Assert.AreEqual(1, mock.RecommendationEventCount);
         }
 

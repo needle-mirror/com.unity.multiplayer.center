@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Recommendations;
 using UnityEngine;
@@ -126,7 +125,12 @@ namespace Unity.Multiplayer.Center.Questionnaire
 
         internal static bool TryGetAnswerByQuestionId(AnswerData answers, string questionId, out AnsweredQuestion foundAnswer)
         {
-            foreach (var aq in answers.Answers)
+            return TryGetAnswerByQuestionId(answers.Answers, questionId, out foundAnswer);
+        }
+
+        internal static bool TryGetAnswerByQuestionId(IEnumerable<AnsweredQuestion> answerList, string questionId, out AnsweredQuestion foundAnswer)
+        {
+            foreach (var aq in answerList)
             {
                 if (aq.QuestionId == questionId)
                 {
@@ -211,11 +215,19 @@ namespace Unity.Multiplayer.Center.Questionnaire
         }
         public static bool AreMandatoryQuestionsFilled(QuestionnaireData questionnaire, AnswerData answers)
         {
-            var mandatoryQuestions = questionnaire.Questions.Where(x => x.IsMandatory).Select(q => q.Id).ToArray();
-            var foundAnswers = new bool[mandatoryQuestions.Length];
+            var mandatoryQuestions = new List<string>();
+            foreach (var question in questionnaire.Questions)
+            {
+                if (question.IsMandatory)
+                {
+                    mandatoryQuestions.Add(question.Id);
+                }
+            }
+            
+            var foundAnswers = new bool[mandatoryQuestions.Count];
             foreach (var answer in answers.Answers)
             {
-                for (int i = 0; i < mandatoryQuestions.Length; i++)
+                for (var i = 0; i < mandatoryQuestions.Count; i++)
                 {
                     if (answer.QuestionId == mandatoryQuestions[i] && answer.Answers.Count > 0)
                     {
@@ -225,7 +237,15 @@ namespace Unity.Multiplayer.Center.Questionnaire
                 }
             }
             
-            return foundAnswers.All(x => x); 
+            foreach (var answer in foundAnswers)
+            {
+                if (!answer)
+                {
+                    return false;
+                }
+            }
+            
+            return true;
         }
 
         public static SelectedSolutionsData.HostingModel ConvertInfrastructure(RecommendedSolutionViewData serverArchitectureOption)

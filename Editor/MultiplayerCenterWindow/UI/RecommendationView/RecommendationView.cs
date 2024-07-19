@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Multiplayer.Center.Questionnaire;
 using Unity.Multiplayer.Center.Recommendations;
 using UnityEditor;
@@ -12,12 +11,13 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
     internal class RecommendationView
     {
         RecommendationViewData m_Recommendation;
-        SolutionsToRecommendedPackageViewData m_AllPackages;
-
-        public RecommendationViewData CurrentRecommendation => m_Recommendation;
         
+        SolutionsToRecommendedPackageViewData m_AllPackages;
         public SolutionsToRecommendedPackageViewData AllPackages 
             => m_AllPackages ??= RecommenderSystem.GetSolutionsToRecommendedPackageViewData();
+
+        public RecommendationViewData CurrentRecommendation => m_Recommendation;
+
         
         public ScrollView Root { get; } = new();
 
@@ -29,6 +29,8 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
 
         VisualElement m_Content;
 
+        PreReleaseHandling m_DistributedAuthorityPreReleaseHandling;
+
         //Todo: for now check on the view but actually should be on the model
         public Action OnPackageSelectionChanged;
 
@@ -38,7 +40,7 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
             Root.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
             var title = new VisualElement();
             title.Add(new Label() {text = "Multiplayer Solutions and Recommendations"});
-            title.AddToClassList("view-headline");
+            title.AddToClassList(StyleClasses.ViewHeadline);
             
             Root.Add(m_Content = new VisualElement() {name = "recommendation-view-section-container"});
             m_Content.Add(title);
@@ -48,8 +50,8 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
             topContainer.Add(m_HostingModelSelectionView);
             m_Content.Add(topContainer);
             
-            m_NetcodeSelectionView.OnUserChangedSolution += UpdateView;
-            m_HostingModelSelectionView.OnUserChangedSolution += UpdateView;
+            m_NetcodeSelectionView.OnUserChangedSolution += OnUserChangedSolution;
+            m_HostingModelSelectionView.OnUserChangedSolution += OnUserChangedSolution;
             
             m_RecommendedPackagesSection.OnPackageSelectionChanged += RaisePackageSelectionChanged;
             m_HostingModelSelectionView.OnPackageSelectionChanged += RaisePackageSelectionChanged;
@@ -61,40 +63,20 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
 
             Root.Add(m_NoRecommendationsView);
 
-            UpdateView();
-            Undo.undoRedoPerformed += OnUndoRedoPerformed;
+            UpdateView(false);
         }
 
-        public void UpdateRecommendation(RecommendationViewData recommendation)
+        public void UpdateRecommendation(RecommendationViewData recommendation, PreReleaseHandling daHandling)
         {
             m_Recommendation = recommendation;
-            UpdateView();
-        }
-
-        void OnUndoRedoPerformed()
-        {
-            var currentSelectedNetcode = UserChoicesObject.instance.SelectedSolutions.SelectedNetcodeSolution;
-            var currentSelectedHostingModel = UserChoicesObject.instance.SelectedSolutions.SelectedHostingModel;
-
-            // Update m_Recommendation based on the current state
-            foreach (var netcodeOption in m_Recommendation.NetcodeOptions)
-            {
-                netcodeOption.Selected = Logic.ConvertNetcodeSolution(netcodeOption) == currentSelectedNetcode;
-            }
-
-            foreach (var serverArchitectureOption in m_Recommendation.ServerArchitectureOptions)
-            {
-                serverArchitectureOption.Selected = Logic.ConvertInfrastructure(serverArchitectureOption) == currentSelectedHostingModel;
-            }
-
-            // Refresh the UI
-            UpdateView();
+            m_DistributedAuthorityPreReleaseHandling = daHandling;
+            UpdateView(false);
         }
 
         public void Clear()
         {
-            m_NetcodeSelectionView.OnUserChangedSolution -= UpdateView;
-            m_HostingModelSelectionView.OnUserChangedSolution -= UpdateView;
+            m_NetcodeSelectionView.OnUserChangedSolution -= OnUserChangedSolution;
+            m_HostingModelSelectionView.OnUserChangedSolution -= OnUserChangedSolution;
             m_RecommendedPackagesSection.OnPackageSelectionChanged -= RaisePackageSelectionChanged;
             m_HostingModelSelectionView.OnPackageSelectionChanged -= RaisePackageSelectionChanged;
             m_NetcodeSelectionView.OnPackageSelectionChanged -= RaisePackageSelectionChanged;
@@ -107,7 +89,12 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
             OnPackageSelectionChanged?.Invoke();
         }
 
-        void UpdateView()
+        void OnUserChangedSolution()
+        {
+            UpdateView(true);
+        }
+        
+        void UpdateView(bool recordUndo)
         {
             var hideRecommendation = m_Recommendation == null;
             SetRecommendationHidden(hideRecommendation);
@@ -119,10 +106,12 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
             }
             
             RecommenderSystem.AdaptRecommendationToNetcodeSelection(m_Recommendation);
+            m_DistributedAuthorityPreReleaseHandling.PatchPackages(m_Recommendation);
+            
             var selectedNetcode = RecommendationUtils.GetSelectedNetcode(m_Recommendation);
             var selectedHostingModel = RecommendationUtils.GetSelectedHostingModel(m_Recommendation);
             var selection = new SolutionSelection(selectedNetcode.Solution, selectedHostingModel.Solution);
-            var allPackages = AllPackages.GetPackagesForSelection(selection).ToList(); 
+            var allPackages = AllPackages.GetPackagesForSelection(selection); 
 
             // Debug(selection, allPackages);
             m_NetcodeSelectionView.UpdateData(m_Recommendation.NetcodeOptions,
@@ -135,7 +124,7 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
                 RecommendationUtils.FilterByType(allPackages, RecommendationType.Incompatible));
             OnPackageSelectionChanged?.Invoke();
             
-            UpdateUserInputObject(m_Recommendation);
+            UpdateUserInputObject(m_Recommendation, recordUndo);
         }
 
         static void Debug(SolutionSelection selection, List<RecommendedPackageViewData> allPackages)
@@ -158,8 +147,11 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
             Root.Q<VisualElement>("unity-content-container").style.flexGrow = hideRecommendation ? 1 : 0;
         }
 
-        static void UpdateUserInputObject(RecommendationViewData recommendation)
+        static void UpdateUserInputObject(RecommendationViewData recommendation, bool recordUndo)
         {
+            if(recordUndo)
+                Undo.RecordObject(UserChoicesObject.instance,"Selection Change");
+            
             var currentSelectedNetcode = UserChoicesObject.instance.SelectedSolutions.SelectedNetcodeSolution;
             foreach (var netcodeOption in recommendation.NetcodeOptions)
             {
@@ -173,7 +165,6 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
                 if (serverArchitectureOption.Selected)
                     selectedHostingModel = Logic.ConvertInfrastructure(serverArchitectureOption);
             }
-            Undo.RecordObject(UserChoicesObject.instance,"Selection Change");
 
             UserChoicesObject.instance.SetUserSelection(selectedHostingModel, currentSelectedNetcode);
             UserChoicesObject.instance.Save();

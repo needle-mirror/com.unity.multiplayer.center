@@ -12,7 +12,7 @@ namespace Unity.MultiplayerCenterTests
     /// <summary>
     /// This is meant to be a utility class for MultiplayerCenter tests (including the project tests).
     /// </summary>
-    internal static class MultiplayerCenterTestUtils
+    internal static class UtilsForMultiplayerCenterTests
     {
         public static void CloseMultiplayerCenterWindow()
         {
@@ -114,6 +114,11 @@ namespace Unity.MultiplayerCenterTests
         static string GetUserChoicesTempFilePath()
         {
             return  Path.ChangeExtension(GetUserChoicesFullFilePath(), ".tmp");
+        }
+
+        public static void SetNetcodeSolutionToCustomNetcode(bool flag)
+        {
+            UserChoicesObject.instance.SelectedSolutions.SelectedNetcodeSolution = flag ? SelectedSolutionsData.NetcodeSolution.CustomNetcode : SelectedSolutionsData.NetcodeSolution.NGO;
         }
     }
 }

@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 
 namespace Unity.MultiplayerCenterTests
 {
-    internal static class GettingStartedTabTestsUtils
+    internal static class UtilsForGettingStartedTabTests
     {
         public static void OpenGettingStartedTab()
         {
@@ -18,7 +18,7 @@ namespace Unity.MultiplayerCenterTests
 
         public static VisualElement GetSection(string sectionName)
         {
-            return EditorWindow.GetWindow<MultiplayerCenterWindow>().rootVisualElement.Q<Foldout>(sectionName);
+            return EditorWindow.GetWindow<MultiplayerCenterWindow>().rootVisualElement.Q(sectionName);
         }
 
         public static bool CheckErrorLogged(LogType type)

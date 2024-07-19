@@ -5,11 +5,22 @@ using Unity.Multiplayer.Center.Analytics;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Onboarding;
 using Unity.Multiplayer.Center.Questionnaire;
+using Unity.Multiplayer.Center.Window.UI;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Unity.Multiplayer.Center.Window
 {
+    [Serializable]
+    internal class QuickstartCategory
+    {
+        [SerializeField]
+        public OnboardingSectionCategory Category;
+
+        [SerializeReference]
+        public IOnboardingSection[] Sections;
+    }
+    
     /// <summary>
     /// This is the main view for the Quickstart tab.
     /// Note that in the code, the Quickstart tab is referred to as the Getting Started tab.
@@ -18,18 +29,28 @@ namespace Unity.Multiplayer.Center.Window
     internal class GettingStartedTabView : ITabView
     {
         const string k_SectionUssClass = "onboarding-section-category-container";
-        const string k_SectionTitleUssClass = "onboarding-section-category-title";
-        const string k_NonEmptyMessage = "Here are some helpful resources to get started with your installed packages.";
-        const string k_EmptyMessage = "You have not installed any packages yet. To get started, go to the Recommendation tab.";
-        
+        const string k_CategoryButtonUssClass = "onboarding-category-button";
+        const string k_OnboardingCategoriesUssClass = "onboarding-categories";
+        const string k_OnboardingContentUssClass = "onboarding-content";
+
         [field: SerializeField]
         public string Name { get; private set; }
-
+        
+        public bool IsEnabled => PackageManagement.IsAnyMultiplayerPackageInstalled();
+      
+        public string ToolTip => IsEnabled ? "" : "Please install some multiplayer packages to access quickstart content.";
+        
         public VisualElement RootVisualElement { get; set; }
 
-        [SerializeReference]
-        List<IOnboardingSection> m_Sections;
-
+        [SerializeField]
+        int m_SelectedCategory;
+        
+        Dictionary<OnboardingSectionCategory, int> m_CategoryIndices;
+        
+        VisualElement[] m_CategoryContainers;
+        
+        [SerializeField]
+        QuickstartCategory[] m_SectionCategories;
         /// <summary>
         /// To find out if new section appeared, we need to keep track of the last section types we found.
         /// </summary>
@@ -50,8 +71,8 @@ namespace Unity.Multiplayer.Center.Window
             UserChoicesObject.instance.OnSolutionSelectionChanged += NotifyChoicesChanged;
             
             var currentSectionTypes = SectionsFinder.FindSectionTypes();
-
-            if (m_Sections == null || m_Sections.Count == 0 || m_LastFoundSectionTypes.HaveTypesChanged(currentSectionTypes))
+            
+            if (m_SectionCategories == null || m_SectionCategories.Length == 0 || m_LastFoundSectionTypes.HaveTypesChanged(currentSectionTypes))
             {
                 m_LastFoundSectionTypes = currentSectionTypes;
                 ConstructSectionInstances();
@@ -66,66 +87,132 @@ namespace Unity.Multiplayer.Center.Window
         public void Clear()
         {
             RootVisualElement?.Clear();
-            if (m_Sections == null)
+            if (m_SectionCategories == null)
                 return;
-            foreach (var section in m_Sections)
+            foreach (var category in m_SectionCategories)
             {
-                section?.Unload();
+                if(category == null) continue;
+                foreach (var section in category.Sections)
+                {
+                    section?.Unload();    
+                }
             }
 
-            m_Sections.Clear();
+            Array.Clear(m_SectionCategories, 0, m_SectionCategories.Length);
+        }
+        
+        public void SetVisible(bool visible)
+        {
+            RootVisualElement.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         void ConstructSectionInstances()
         {
-            var allSections = new List<IOnboardingSection>();
-            foreach (var categoryObject in Enum.GetValues(typeof(OnboardingSectionCategory)))
+            var enumValues = Enum.GetValues(typeof(OnboardingSectionCategory));
+            var allCategories = new QuickstartCategory[enumValues.Length];
+            foreach (var categoryObject in enumValues)
             {
                 var category = (OnboardingSectionCategory) categoryObject;
-                if (!m_LastFoundSectionTypes.TryGetValue(category, out var sections))
-                    continue;
-
-                foreach (var sectionType in sections)
+                var categoryData = new QuickstartCategory {Category = category, Sections = Array.Empty<IOnboardingSection>()};
+                allCategories[(int) category] = categoryData;
+                if (!m_LastFoundSectionTypes.TryGetValue(category, out var sectionTypes))
                 {
+                    continue; // no section for that category
+                }
+
+                categoryData.Sections = new IOnboardingSection[sectionTypes.Length];
+                for (var index = 0; index < sectionTypes.Length; index++)
+                {
+                    var sectionType = sectionTypes[index];
                     var newSection = SectionFromType(sectionType);
+                    
+                    // TODO: check what to do with null sections
                     if (newSection == null) continue;
 
-                    allSections.Add(newSection);
+                    categoryData.Sections[index] = newSection;
                 }
             }
-
-            m_Sections = allSections;
+ 
+            m_SectionCategories = allCategories;
         }
 
+        void SetSelectedCategory(int categoryIndex)
+        {
+            m_SelectedCategory = categoryIndex;
+            for (var index = 0; index < m_CategoryContainers.Length; index++)
+            {
+                var categoryContainer = m_CategoryContainers[index];
+                if(categoryContainer != null)
+                    categoryContainer.style.display = index == categoryIndex ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+        }
+        
         void CreateViews()
         {
             RootVisualElement ??= new VisualElement();
             RootVisualElement.Clear();
+
+            m_CategoryIndices = new Dictionary<OnboardingSectionCategory, int>();
+            m_CategoryContainers = new VisualElement[m_SectionCategories.Length];
+            
+            var horizontalContainer = new TwoPaneSplitView(0, 250, TwoPaneSplitViewOrientation.Horizontal);
+            RootVisualElement.Add(horizontalContainer);
+            horizontalContainer.AddToClassList(StyleClasses.MainSplitView);
+            var buttonGroup = new ToggleButtonGroup() { allowEmptySelection = false, isMultipleSelection = false};
+            buttonGroup.AddToClassList(k_OnboardingCategoriesUssClass);
+            buttonGroup.AddToClassList(StyleClasses.MainSplitViewLeft);
+            horizontalContainer.Add(buttonGroup);
+            
             var scrollView = new ScrollView(ScrollViewMode.Vertical) {horizontalScrollerVisibility = ScrollerVisibility.Hidden};
-            scrollView.AddToClassList("onboarding-content");
-            RootVisualElement.Add(scrollView);
-            scrollView.Add(CreateIntroContent(m_Sections.Count));
-            VisualElement currentContainer = null;
-            OnboardingSectionCategory? currentCategory = null;
-            foreach (var section in m_Sections)
+            scrollView.AddToClassList(StyleClasses.MainSplitViewRight);
+            scrollView.AddToClassList(k_OnboardingContentUssClass);
+            
+            horizontalContainer.Add(scrollView);
+
+            var index = -1;
+            foreach (var categoryData in m_SectionCategories)
+            {
+                if (categoryData == null || categoryData.Sections.Length == 0) continue;
+
+                ++index;
+                var category = categoryData.Category;
+                var currentContainer = StartNewSection(scrollView, category);
+                scrollView.Add(currentContainer);
+                
+                m_CategoryIndices[category] = index;
+                m_CategoryContainers[index] = currentContainer;
+                
+                var button = new Button { text = SectionCategoryToString(category)};
+                button.AddToClassList(k_CategoryButtonUssClass);
+                buttonGroup.Add(button);
+                
+                CreateSectionViewsIn(currentContainer, categoryData);
+            }
+            
+            SetSelectedCategory(m_SelectedCategory);
+            ulong mask = (ulong) 1 << m_SelectedCategory; 
+            buttonGroup.SetValueWithoutNotify(new ToggleButtonGroupState(mask, m_CategoryIndices.Count));
+            buttonGroup.RegisterValueChangedCallback(evt =>
+            {
+                var selectedIndex = evt.newValue.GetActiveOptions(stackalloc int[evt.newValue.length])[0];
+                SetSelectedCategory(selectedIndex);
+            });
+            NotifyChoicesChanged();
+        }
+
+        void CreateSectionViewsIn(VisualElement currentContainer, QuickstartCategory categoryData)
+        {
+            foreach (var section in categoryData.Sections)
             {
                 try
                 {
-                    var thisSectionCategory = section.Category; // may throw
-                    if (thisSectionCategory != currentCategory)
-                    {
-                        currentContainer = StartNewSection(scrollView, thisSectionCategory);
-                        scrollView.Add(currentContainer);
-                        currentCategory = thisSectionCategory;
-                    }
-
                     if (section is ISectionWithAnalytics sectionWithAnalytics)
-                    {   
+                    {
                         var attribute = section.GetType().GetCustomAttribute<OnboardingSectionAttribute>();
                         sectionWithAnalytics.AnalyticsProvider = new OnboardingSectionAnalyticsProvider(MultiplayerCenterAnalytics,
-                            targetPackageId:attribute.TargetPackageId, sectionId: attribute.Id);  
+                            targetPackageId: attribute.TargetPackageId, sectionId: attribute.Id);
                     }
-                    
+
                     section.Load();
                     section.Root.name = section.GetType().Name;
                     currentContainer.Add(section.Root);
@@ -135,68 +222,57 @@ namespace Unity.Multiplayer.Center.Window
                     Debug.LogWarning($"Could not load onboarding section {section?.GetType()}: {e}");
                 }
             }
-            
-            NotifyChoicesChanged();
         }
 
         void NotifyChoicesChanged()
         {
-            if (m_Sections == null)
+            if (m_SectionCategories == null)
                 return;
             
-            foreach (var section in m_Sections)
+            foreach (var section in m_SectionCategories)
             {
                 if (section is not ISectionDependingOnUserChoices dependentSection) continue;
 
                 try
                 {
-                    SetChoicesData(dependentSection);
+                    dependentSection.HandleAnswerData(UserChoicesObject.instance.UserAnswers);
+                    dependentSection.HandlePreset(UserChoicesObject.instance.Preset);
+                    dependentSection.HandleUserSelectionData(UserChoicesObject.instance.SelectedSolutions);
                 }
                 catch (Exception e)
                 {
-                     Debug.LogWarning($"Could not set data for onboarding section {section?.GetType()}: {e}");
+                     Debug.LogWarning($"Could not set data for onboarding section {section.GetType()}: {e}");
                 }
             }
         }
-
-        static void SetChoicesData(ISectionDependingOnUserChoices dependentSection)
-        {
-            dependentSection.HandleAnswerData(UserChoicesObject.instance.UserAnswers);
-            dependentSection.HandlePreset(UserChoicesObject.instance.Preset);
-            dependentSection.HandleUserSelectionData(UserChoicesObject.instance.SelectedSolutions);
-        }
         
-        VisualElement CreateIntroContent(int sectionCount)
+        VisualElement CreateIntroContent()
         {
-            // The combination of both the QuickstartMissingView and the label is weird, so we only show the 
-            // QuickstartMissingView if it needs to be shown. 
-            // If no Multiplayer package is installed, we do not show the warning, because it is expected that
-            // the package is not installed yet.
-            if(PackageManagement.IsAnyMultiplayerPackageInstalled() && QuickstartIsMissingView.ShouldShow)
-               return new QuickstartIsMissingView().RootVisualElement;
-            
-            var label = new Label(sectionCount > 0 ? k_NonEmptyMessage : k_EmptyMessage);
-            label.style.opacity = 0.8f;
-            label.AddToClassList(k_SectionUssClass);
-            return label;
+            return PackageManagement.IsAnyMultiplayerPackageInstalled() && QuickstartIsMissingView.ShouldShow 
+                ? new QuickstartIsMissingView().RootVisualElement : new VisualElement();
         }
 
         static VisualElement StartNewSection(VisualElement parent, OnboardingSectionCategory category)
         {
-            var title = new Label(SectionCategoryToString(category));
-            title.AddToClassList(k_SectionTitleUssClass);
             var container = new VisualElement();
-
             if (category != OnboardingSectionCategory.Intro)
-                container.Add(title);
+            {
+                var titleContainer = new VisualElement();
+                titleContainer.AddToClassList(StyleClasses.ViewHeadline);
+                
+                var title = new Label(SectionCategoryToString(category));
+                titleContainer.Add(title);
+                container.Add(titleContainer);
+            }
+
             container.AddToClassList(k_SectionUssClass);
             parent.Add(container);
             return container;
         }
 
-        static IOnboardingSection SectionFromType(System.Type type)
+        static IOnboardingSection SectionFromType(Type type)
         {
-            var constructed = type.GetConstructor(System.Type.EmptyTypes)?.Invoke(null);
+            var constructed = type.GetConstructor(Type.EmptyTypes)?.Invoke(null);
             if (constructed is IOnboardingSection section) return section;
 
             Debug.LogWarning($"Could not create onboarding section {type}");
@@ -208,9 +284,9 @@ namespace Unity.Multiplayer.Center.Window
             return category switch
             {
                 OnboardingSectionCategory.Intro => "Intro",
-                OnboardingSectionCategory.Netcode => "Fundamentals - Netcode and Tools",
+                OnboardingSectionCategory.Netcode => "Netcode and Tools",
                 OnboardingSectionCategory.ConnectingPlayers => "Connecting Players",
-                OnboardingSectionCategory.ServerInfrastructure => "Server Infrastructure",
+                OnboardingSectionCategory.ServerInfrastructure => "Hosting",
                 OnboardingSectionCategory.Other => "Other",
                 _ => "Unknown"
             };

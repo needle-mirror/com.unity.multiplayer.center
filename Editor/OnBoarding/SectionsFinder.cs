@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Questionnaire;
+using Unity.Multiplayer.Center.Recommendations;
 using UnityEditor;
 using UnityEngine;
 using DisplayCondition = Unity.Multiplayer.Center.Common.DisplayCondition;
@@ -12,7 +12,7 @@ namespace Unity.Multiplayer.Center.Onboarding
 {
     using SectionCategoryToSectionIdToSectionType = Dictionary<OnboardingSectionCategory, Dictionary<string, Type>>;
     
-    using SectionCategoryToSectionList = Dictionary<OnboardingSectionCategory, System.Type[]>;
+    using SectionCategoryToSectionList = Dictionary<OnboardingSectionCategory, Type[]>;
     
     /// <summary>
     /// Stores the available section types in a serializable way, but for comparison purposes only.
@@ -31,8 +31,7 @@ namespace Unity.Multiplayer.Center.Onboarding
         public AvailableSectionTypes(SectionCategoryToSectionList sectionTypes)
         {
             m_SectionMapping = sectionTypes;
-            m_SectionTypeNames = m_SectionMapping.Values.SelectMany(e => e).Select(x => x.AssemblyQualifiedName)
-                .OrderBy(a => a, StringComparer.InvariantCulture).ToArray();
+            m_SectionTypeNames = RecommendationUtils.GetSectionTypeNamesInOrder(m_SectionMapping).ToArray();
         }
 
         public bool TryGetValue(OnboardingSectionCategory category, out Type[] sectionTypes)
@@ -42,7 +41,7 @@ namespace Unity.Multiplayer.Center.Onboarding
 
         public bool HaveTypesChanged(AvailableSectionTypes other)
         {
-            return m_SectionTypeNames == null || !m_SectionTypeNames.SequenceEqual(other.m_SectionTypeNames); 
+            return m_SectionTypeNames == null || !RecommendationUtils.AreArraysEqual(m_SectionTypeNames, other.m_SectionTypeNames);
         }
     }
     
@@ -65,21 +64,42 @@ namespace Unity.Multiplayer.Center.Onboarding
 
         static AvailableSectionTypes SortSectionsByOrder(SectionCategoryToSectionIdToSectionType dico)
         {
-            var result = new Dictionary<OnboardingSectionCategory, System.Type[]>();
-            foreach (var (category, idToType) in dico)
+            var result = new SectionCategoryToSectionList();
+            foreach (var (category, idToTypeDictionary) in dico)
             {
-                var sorted = idToType.Select(kv => new
-                {
-                    Type = kv.Value,
-                    Attribute = kv.Value.GetCustomAttribute<OnboardingSectionAttribute>()
-                })
-                .Where(x => x.Attribute != null)
-                .OrderBy(x => x.Attribute.Order)
-                .Select(x => x.Type).ToArray();
-                result[category] = sorted;
+                var typeAttributeList = GetOnboardingTypeAttributeList(idToTypeDictionary);
+                typeAttributeList.Sort((typeA, typeB) => typeA.Attribute.Order.CompareTo(typeB.Attribute.Order));
+                result[category] = GetOnboardingTypeArray(typeAttributeList);
             }
 
             return new AvailableSectionTypes(result);
+        }
+
+        static Type[] GetOnboardingTypeArray(List<(Type Type, OnboardingSectionAttribute Attribute)> typeAttributeList)
+        {
+            var typeArray = new Type[typeAttributeList.Count];
+            for (var i = 0; i < typeAttributeList.Count; i++)
+            {
+                typeArray[i] = typeAttributeList[i].Type;
+            }
+
+            return typeArray;
+        }
+
+        static List<(Type Type, OnboardingSectionAttribute Attribute)> GetOnboardingTypeAttributeList(Dictionary<string, Type> idToTypeDictionary)
+        {
+            var typeAttributeList = new List<(Type Type, OnboardingSectionAttribute Attribute)>(idToTypeDictionary.Count);
+
+            foreach (var (_, type) in idToTypeDictionary)
+            {
+                var attribute = type.GetCustomAttribute<OnboardingSectionAttribute>();
+                if (attribute != null)
+                {
+                    typeAttributeList.Add((type, attribute));
+                }
+            }
+
+            return typeAttributeList;
         }
 
         static SectionCategoryToSectionIdToSectionType GetSectionCategoryToSectionIdToSectionType()
@@ -104,6 +124,9 @@ namespace Unity.Multiplayer.Center.Onboarding
                         continue;
                 
                 if (!IsSectionSupportedBySelectedInfrastructure(sectionAttribute))
+                    continue;
+                
+                if (!IsSectionSupportedBySelectedNetcodeChoice(sectionAttribute))
                     continue;
 
                 if (!dico.ContainsKey(sectionAttribute.Category))
@@ -141,19 +164,20 @@ namespace Unity.Multiplayer.Center.Onboarding
             };
         }
         
-        static bool IsSectionSupportedBySelectedInfrastructure(OnboardingSectionAttribute attribute)
+      static bool IsSectionSupportedBySelectedInfrastructure(OnboardingSectionAttribute attribute)
         {
             if (UserChoicesObject.instance.SelectedSolutions == null) return true;
             
             var selectedInfrastructure = UserChoicesObject.instance.SelectedSolutions.SelectedHostingModel;
-            return attribute.InfrastructureDependency switch
-            {
-                InfrastructureDependency.None => true,
-                InfrastructureDependency.ClientHosted => selectedInfrastructure == SelectedSolutionsData.HostingModel.ClientHosted,
-                InfrastructureDependency.DedicatedServer => selectedInfrastructure == SelectedSolutionsData.HostingModel.DedicatedServer,
-                InfrastructureDependency.CloudCode => selectedInfrastructure == SelectedSolutionsData.HostingModel.CloudCode,
-                _ => throw new NotImplementedException($"Unknown InfrastructureDependency: {attribute.InfrastructureDependency}")
-            };
+            return attribute.HostingModelDependency == SelectedSolutionsData.HostingModel.None || attribute.HostingModelDependency == selectedInfrastructure;
+        }
+        
+        static bool IsSectionSupportedBySelectedNetcodeChoice(OnboardingSectionAttribute attribute)
+        {
+            if (UserChoicesObject.instance.SelectedSolutions == null) return true;
+            
+            var selectedNetcode = UserChoicesObject.instance.SelectedSolutions.SelectedNetcodeSolution;
+            return attribute.NetcodeDependency == SelectedSolutionsData.NetcodeSolution.None || attribute.NetcodeDependency == selectedNetcode;
         }
 
         static bool NothingInstalled()

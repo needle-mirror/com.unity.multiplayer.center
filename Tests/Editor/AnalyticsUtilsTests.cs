@@ -13,7 +13,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void AnalyticsUtils_GetQuestionDisplayNames_RightCount()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
             var questionDisplayNames = AnalyticsUtils.GetQuestionDisplayNames(questionnaire);
             Assert.AreEqual(questionDisplayNames.Count, questionnaire.Questions.Length);
         }
@@ -26,9 +26,9 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void AnalyticsUtils_GetQuestionDisplayNames_RightValuesForSelectedQuestions()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
             var questionDisplayNames = AnalyticsUtils.GetQuestionDisplayNames(questionnaire);
-            Assert.AreEqual("Player Count", questionDisplayNames["PlayerCount"]);
+            Assert.AreEqual("Number of Players per Session", questionDisplayNames["PlayerCount"]);
             Assert.AreEqual("Gameplay Pace", questionDisplayNames["Pace"]);
             Assert.AreEqual("Cheating / Modding", questionDisplayNames["Cheating"]);
             Assert.AreEqual("Cost Sensitivity", questionDisplayNames["CostSensitivity"]);
@@ -38,7 +38,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void AnalyticsUtils_GetAnswerDisplayNames_RightCount()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
             var answerDisplayNames = AnalyticsUtils.GetAnswerDisplayNames(questionnaire);
             
             // Note: 2 birds one stone: this test also nicely checks if we have duplicates with question ids
@@ -79,9 +79,9 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void AnalyticsUtils_ToGameSpecs_AllIdsAreInTheGameSpecs()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
             var answerDisplayNames = AnalyticsUtils.GetAnswerDisplayNames(questionnaire);
-            var answerData = RecommendationTestsUtils.BuildAnswerMatching(questionnaire);
+            var answerData = UtilsForRecommendationTests.BuildAnswerMatching(questionnaire);
             var questionIdToQuestionName = AnalyticsUtils.GetQuestionDisplayNames(questionnaire);
             var gameSpecs = AnalyticsUtils.ToGameSpecs(answerData, answerDisplayNames, questionIdToQuestionName);
             Assert.AreEqual(answerData.Answers.Count, gameSpecs.Length);
@@ -140,7 +140,7 @@ namespace Unity.MultiplayerCenterTests
         public void AnalyticsUtils_AssumptionTest_HardCodedNumNetcodePackageMatchesRecommendations()
         {
             // note that the amount of possible netcode does not change with the answer data.
-            var someRecommendation = RecommendationTestsUtils.GetSomeRecommendation();
+            var someRecommendation = UtilsForRecommendationTests.GetSomeRecommendation();
             var netcodePackageCount = someRecommendation.NetcodeOptions.Count(e
                 => !string.IsNullOrEmpty(e.MainPackage?.PackageId));
             
@@ -151,7 +151,7 @@ namespace Unity.MultiplayerCenterTests
         public void AnalyticsUtils_AssumptionTest_HardCodedNumHostingPackageMatchesRecommendations()
         {
             // note that the amount of possible netcode does not change with the answer data.
-            var someRecommendation = RecommendationTestsUtils.GetSomeRecommendation();
+            var someRecommendation = UtilsForRecommendationTests.GetSomeRecommendation();
             var hostingPackageCount = someRecommendation.ServerArchitectureOptions.Count(e
                 => !string.IsNullOrEmpty(e.MainPackage?.PackageId));
             
@@ -165,7 +165,7 @@ namespace Unity.MultiplayerCenterTests
             const string n4e = "com.unity.netcode";
             const string tp = "com.unity.transport";
             
-            var someRecommendation = RecommendationTestsUtils.GetSomeRecommendation();
+            var someRecommendation = UtilsForRecommendationTests.GetSomeRecommendation();
             var packageViews = RecommenderSystem.GetSolutionsToRecommendedPackageViewData();
             var packagesAnalyticsFormat = AnalyticsUtils.GetPackagesWithAnalyticsFormat(someRecommendation, packageViews);
 
@@ -187,7 +187,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void AnalyticsUtils_GetPackagesWithAnalyticsFormat_AllPackagesAreIn()
         {
-            var someRecommendation = RecommendationTestsUtils.GetSomeRecommendation();
+            var someRecommendation = UtilsForRecommendationTests.GetSomeRecommendation();
             var packageViews = RecommenderSystem.GetSolutionsToRecommendedPackageViewData();
             var packagesAnalyticsFormat = AnalyticsUtils.GetPackagesWithAnalyticsFormat(someRecommendation, packageViews);
             
@@ -201,9 +201,9 @@ namespace Unity.MultiplayerCenterTests
         
         static void GetAnswersWithMatchingAnalyticsData(out AnswerData answerData, out GameSpec[] gameSpecs)
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
             var answerDisplayNames = AnalyticsUtils.GetAnswerDisplayNames(questionnaire);
-            answerData = RecommendationTestsUtils.BuildAnswerMatching(questionnaire);
+            answerData = UtilsForRecommendationTests.BuildAnswerMatching(questionnaire);
             var questionIdToQuestionName = AnalyticsUtils.GetQuestionDisplayNames(questionnaire);
             gameSpecs = AnalyticsUtils.ToGameSpecs(answerData, answerDisplayNames, questionIdToQuestionName);
         }

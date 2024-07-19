@@ -1,6 +1,5 @@
 using System;
 using Unity.Multiplayer.Center.Analytics;
-using Unity.Multiplayer.Center.Window.UI.RecommendationView;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -14,7 +13,7 @@ namespace Unity.Multiplayer.Center.Window
 
         VisualElement m_SpinningIcon;
 
-        Vector2 m_WindowSize = new(500, 400);
+        Vector2 m_WindowSize = new(350, 300);
 
         public int CurrentTab => m_TabGroup.CurrentTab;
 
@@ -28,11 +27,7 @@ namespace Unity.Multiplayer.Center.Window
 
         [SerializeField]
         bool m_RequestGettingStartedTabAfterDomainReload = false;
-
-        // Distributed Authority is only available in experimental, therefore for now we hide it. 
-        // This should be a temporary hack. 
-        internal const bool IgnoreDistributedAuthority = true;
-
+        
         [SerializeField]
         TabGroup m_TabGroup;
 
@@ -85,7 +80,6 @@ namespace Unity.Multiplayer.Center.Window
 
             m_TabGroup.CreateTabs();
             rootVisualElement.Add(m_TabGroup.Root);
-            rootVisualElement.Add(RecommendationInfoPopupSingleton.recommendationInfoPopup);
 
             var shouldEnable = m_RequestGettingStartedTabAfterDomainReload;
 

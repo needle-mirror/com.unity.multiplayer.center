@@ -29,9 +29,14 @@ namespace Unity.Multiplayer.Center.Common
         public DisplayCondition DisplayCondition { get; set; }
         
         /// <summary>
-        /// Optional: dependency on a certain infrastructure.
+        /// Optional: dependency on a certain hosting model choice.
         /// </summary>
-        public InfrastructureDependency InfrastructureDependency { get; set; }
+        public SelectedSolutionsData.HostingModel HostingModelDependency { get; set; }
+        
+        /// <summary>
+        /// Optional: dependency on a certain netcode choice.
+        /// </summary>
+        public SelectedSolutionsData.NetcodeSolution NetcodeDependency { get; set; }
 
         /// <summary>
         /// Optional: priority in case several onboarding sections are defined for the same package/id.

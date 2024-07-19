@@ -1,19 +1,22 @@
 #root {
-    width: 100%;
-    height: 100%;
-    
     --dark-grey: var(--unity-colors-window-background);
     --standard-grey: var(--unity-colors-app_toolbar_button-background-hover);
     --standard-background-color: var(--unity-colors-window-background);
     --light-grey: var(--unity-colors-dropdown-background);
     --border-color: var(--unity-colors-dropdown-border);
-    --bottom-bar-height: 68px;
+    --card-background: var(--unity-colors-inspector_titlebar-border_accent);
+    
+    --doc-separator-color: #5D5D5D;
+    
+    --tab-button-bar-height: 32px;
+    
+    --bottom-bar-height: 56px;
+    
     --card-width: 300px;
     --card-min-width: 200px;
     --card-poster-icon-width: 92px;
     --card-poster-icon-height: 64px;
     
-
     --checkmark-icon: url("Icons/Check.png");
     --spinner-icon-big: url('Icons/spinner-big.png');
     --questionnaire-empty-view-icon: url('Icons/EmptyViewIcon.png');
@@ -23,7 +26,6 @@
     color: var(--recommendation-badge-color);
     border-color: var(--recommendation-badge-color);
 }
-
 
 .icon{
     min-width: 16px;
@@ -39,7 +41,7 @@ Label{
 
 .view-headline{
     font-size: 14px;
-    padding-bottom: 8px;
+    padding-bottom: 16px;
 }
 
 .icon-package-manager{
@@ -51,7 +53,7 @@ Label{
 }
 
 .icon-three-dots {
-    background-image: var(--questionnaire-icon);
+    background-image: var(--three-dot-icon);
     -unity-background-scale-mode: scale-to-fit;
 }
 
@@ -87,6 +89,9 @@ Label{
     translate: -50% -50%;
 }
 
+.flex-wrap{
+    flex-wrap: wrap;
+}
 
 .color-grey {
     color: var(--badge-color-grey);
@@ -110,10 +115,6 @@ Label{
     -unity-background-scale-mode: scale-to-fit;
     margin-right: 4px;
     background-size: 16px 16px;
-}
-
-.question-section {
-    border-radius: 6px;
 }
 
 .questionnaireIcon {
@@ -180,6 +181,9 @@ Label{
     -unity-font-style: bold;
 }
 
+.question-section {
+}
+
 .question-section__no-scrollbar{
     align-content: flex-start;
     flex-shrink: 0;
@@ -192,12 +196,8 @@ Label{
     align-items: center;
     padding-left: 15px;
     padding-right: 15px;
-    padding-bottom: 30px;
-    padding-top: 12px;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: var(--bottom-bar-height);
+    max-height: var(--bottom-bar-height);
+    min-height: var(--bottom-bar-height);
     flex-direction: row;
     border-width: 1px;
     background-color: var(--unity-colors-window-background);
@@ -207,7 +207,6 @@ Label{
 
 #bottom-bar #install-package-container {
     flex-direction: row;
-    padding-bottom: 12px;
 }
 
 EnumField, DropdownField {
@@ -216,10 +215,6 @@ EnumField, DropdownField {
 }
 
 /* recommendation view*/
-.recommendation-view {
-    min-height: 100px;
-    margin-top: 10px;
-}
 
 #main-sections-container{
     flex-direction: row;
@@ -227,7 +222,7 @@ EnumField, DropdownField {
 }
 
 .main-section{
-    background-color: var(--unity-colors-inspector_titlebar-border_accent);
+    background-color: var(--card-background);
     border-width: 1px;
     border-color: var(--border-color);
     padding-bottom: 16px;
@@ -239,7 +234,6 @@ EnumField, DropdownField {
     padding-left: 16px;
     padding-right: 16px;
 }
-
 
 .main-section .recommendation-item{
     padding: 0px;
@@ -254,6 +248,12 @@ EnumField, DropdownField {
     margin-bottom: 8px;
 }
 
+.main-section .unity-help-box{
+    margin-top: 4px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
 .sub-section{
     margin-top: 4px;
     margin-left: 0px;
@@ -265,19 +265,7 @@ EnumField, DropdownField {
     -unity-font-style: bold;
 }
 
-/*
-.sub-section .recommendation-item{
-    width: var(--card-width);
-    min-width: var(--card-min-width);
-    margin-right: 8px;
-    flex-grow: 1;
-    flex-shrink: 1;
-}
-*/
- 
-
 /*recommendation section - foldout that holds recommendations*/
-
 #card-headline{
     font-size: 12px;
     -unity-font-style: bold;
@@ -318,10 +306,9 @@ EnumField, DropdownField {
 
 .recommendation-item {
     border-width: 1px;
-    background-color: var(--unity-colors-inspector_titlebar-border_accent);
-    
+    background-color: var(--card-background);
     overflow: hidden;
-    flex-grow: 1;
+    flex-grow: 0;
     flex-shrink: 1;
     min-height: 32px;
     margin-top: 4px;
@@ -362,18 +349,7 @@ EnumField, DropdownField {
     justify-content: flex-end;
 }
 
-/* InfoPopup for Recommendations */
-.infopopup-enabler {
-    position: absolute;
-    border-radius: 6px;
-    border-width: 1px;
-    border-color: var(--border-color);
-    background-color: var(--dark-grey);
-    padding: 15px;
-    min-width: 50px;
-}
-
-.recommended-badge {
+.badge {
     font-size: 9px;
     padding: 1px;
     margin-left: 4px;
@@ -388,18 +364,42 @@ EnumField, DropdownField {
     flex-shrink: 1;
 }
 
+.pre-release-badge {
+    color: var(--pre-release-badge-color);
+    background-color: var(--pre-release-badge-color-bg);
+    border-color: var(--pre-release-badge-color);
+}
+
 /*Tab views - if we are sure we will not support 2022, we should merge this with TabView uss*/
+#tab-view{
+    height: 100%;
+}
+
 #tab-zone {
     flex-direction: row;
     justify-content: center;
-    margin-bottom: 10px;
-    min-height: 26px;
+    align-items: center;
+    min-height: var(--tab-button-bar-height);
+    max-height: var(--tab-button-bar-height);
 }
 
-#spit-view {
-    margin-bottom: var(--bottom-bar-height);
+.tabs-container {
+    height: 100%;
+}
+
+.tab-content{
+    height: 100%;
+}
+
+.main-split-view {
     border-top-width: 1px;
     border-top-color: var(--border-color);
+    height: 100%;
+    margin-bottom: 0px;
+}
+
+.main-split-view-right{
+    margin-top: 10px;
 }
 
 #unity-dragline-anchor{
@@ -412,16 +412,19 @@ EnumField, DropdownField {
 }
 
 .tab-button {
-    min-height: 26px;
-    flex-shrink: 0;
-    min-width: 0;
+    margin: 0;
+    padding-top: 4px;
     border-width: 0px;
+    border-bottom-width: 2px;
+    min-height: var(--tab-button-bar-height);
+    flex-grow: 0;
+    flex-shrink: 0;
     border-color: var(--dark-grey);
-    border-bottom-width: 0px;
     background-color: var(--dark-grey);
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 12px;
+    padding-right: 12px;
     align-items: center;
+
 }
 
 .tab-button:hover {
@@ -429,16 +432,44 @@ EnumField, DropdownField {
 }
 
 .tab-button.selected {
-    min-height: 26px;
     border-bottom-width: 2px;
-    border-bottom-color: var(--unity-colors-highlight-background);
+    border-bottom-color: var(--tab-button-highlight-color);
 }
 
-.tab-container {
-    height: 100%;
+.onboarding-categories{
+    margin: 0px;
 }
 
 /* Getting started views */
+
+.onboarding-categories .unity-button-group{
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: flex-start;
+    margin: 0px;
+}
+
+.onboarding-category-button{
+    margin: 0px;
+    padding-left: 20px;
+    -unity-text-align: middle-left;
+    width: 100%;
+    min-height: 32px;
+    border-width: 0px;
+    background-color: transparent;
+    border-radius: 0px;
+} 
+
+.onboarding-category-button:hover {
+    background-color: var(--standard-grey);
+}
+
+.onboarding-category-button:checked {
+    background-color: var(--unity-colors-highlight-background);
+    -unity-font-style: bold;
+    color: var(--onboarding-button-selected-text-color);
+}
+
 .onboarding-section-category-container{
     padding-left: 12px;
     padding-right: 12px;
@@ -446,28 +477,61 @@ EnumField, DropdownField {
 }
 
 .onboarding-section-mainbutton{
-
     max-height: 24px;
-    align-self: center;
+    align-self: flex-start;
     padding: 2px 4px 2px 4px;
+    margin-left: 0;
+    margin-top: 4px;
+    margin-bottom: 16px;
 }
 
-.onboarding-content {
- 
-}
-
-.onboarding-section-category-title {
-    -unity-font-style: bold;
-    margin-bottom: 10px;
-}
-
+/*onboarding section*/
 .onboarding-section {
-   
+    background-color: var(--unity-colors-inspector_titlebar-border_accent);
+    padding: 16px;
+    margin-bottom: 8px;
+}
+
+.section-foldout {
+    background-color: var(--card-background);
+    padding: 16px;
+    padding-top: 8px;
+    margin-bottom: 8px;
+}
+
+.section-foldout .unity-foldout__checkmark {
+    /* Use width instead of display: none, which results in the title being cut  */
+    width: 0;
+}
+
+.section-foldout .unity-foldout__text {
+    font-size: 14px;
+    -unity-font-style: Bold;
+    margin-bottom: 8px;
+    margin-left: -6px;
+}
+
+.section-foldout .onboarding-section-short-description {
+    margin-left: -16px;
 }
 
 .onboarding-section-title {
     font-size: 14px;
     -unity-font-style: Bold;
+    margin-bottom: 8px;
+}
+
+.three-dot-button {
+    background-color: transparent;
+    border-width: 0px;
+    padding: 0px;
+    margin: 0px;
+    width: 14px;
+    height: 14px;
+}
+
+.three-dot-button:hover {
+    background-color: var(--standard-grey);
 }
 
 .onboarding-section-short-description {
@@ -478,7 +542,6 @@ EnumField, DropdownField {
 
 .horizontal-container {
     flex-direction: row;
-    margin-top: 20px;
     justify-content: flex-start;
 }
 
@@ -486,16 +549,22 @@ EnumField, DropdownField {
     flex-grow: 1;
 }
 
-
 .doc-button {
     border-width: 0px;
-    margin: 1px;
-    background-color: var(--light-grey);
-    color: var(--unity-colors-link-text);
+    padding: 1px;
+    margin-left: 0px;
+    margin-right: 2px;
+    background-color: var(--card-background);
+    color: var(--link-color);
 }
 
 .doc-button:hover {
     background-color: var(--dark-grey);
+}
+
+#doc-button-separator {
+    margin: 2px;
+    color: var(--doc-separator-color);
 }
 
 .checkmark-icon {
@@ -509,7 +578,6 @@ EnumField, DropdownField {
 }
 
 /* Empty view which is shown when no recommendations are shown*/
-
 
 #empty-view {
     flex-grow: 1;
@@ -531,7 +599,6 @@ EnumField, DropdownField {
     margin-bottom: 8px;
 }
 
-
 #empty-view-message {
     flex-shrink: 0;
     flex-grow: 0;
@@ -541,26 +608,4 @@ EnumField, DropdownField {
     white-space: normal;
 }
 
-/*onboarding section*/
-.section-foldout{
-    background-color: var(--light-grey);
-    border-width: 1px;
-    border-radius: 6px;
-    border-color: var(--border-color);
-}
-
-.section-foldout #unity-content {
-    background-color: var(--standard-grey);
-    padding-top: 12px;
-    padding-bottom: 12px;
-    margin-left: 0;
-    padding-left: 15px;
-    padding-right: 15px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
-.section-foldout Toggle {
-    min-height: 32px;
-}
 

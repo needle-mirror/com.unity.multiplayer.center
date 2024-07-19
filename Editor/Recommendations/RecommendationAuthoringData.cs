@@ -148,7 +148,8 @@ namespace Unity.Multiplayer.Center.Recommendations
                     DocUrl = DocLinks.DistributedAuthority,
                     ShortDescription = SolutionDescriptionAndReason.DistributedAuthority,
                     RecommendedPackages = new RecommendedPackage[]
-                    { //todo
+                    { 
+                        new(Packages.MultiplayerSdkId, RecommendationType.HostingFeatured, "Distributed Authority needs the Multiplayer Services package to work."),
                         new(Packages.DedicatedServerPackageId, RecommendationType.Incompatible, Reasons.DedicatedServerPackageNotRecommended),
                     }
                 },
@@ -184,8 +185,7 @@ namespace Unity.Multiplayer.Center.Recommendations
                         new(Packages.MultiplayerSdkId, RecommendationType.OptionalStandard, Reasons.MultiplayerSdkRecommended),
                         new(Packages.MultiplayerWidgetsId, RecommendationType.OptionalStandard, Reasons.MultiplayerWidgetsRecommended),
                         new(Packages.MultiplayerPlayModeId, RecommendationType.OptionalStandard, Reasons.MultiplayerPlayModeRecommended),
-                    },
-                    IncompatibleSolutions = new IncompatibleSolution[]{new(PossibleSolution.DA, Reasons.DistributedAuthorityNotAvailable)}
+                    }
                 },
                 new()
                 {

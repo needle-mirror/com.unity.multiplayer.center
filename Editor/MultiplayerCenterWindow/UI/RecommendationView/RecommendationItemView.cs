@@ -18,6 +18,7 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
         Label m_PackageNameLabel = new();
         Label m_Catchphrase = new();
         RecommendationBadge m_RecommendedBadge;
+        PreReleaseBadge m_PreReleaseBadge;
         Image m_PackageManagerIcon;
         Image m_HelpIcon;
         Image m_InstalledIcon;
@@ -49,6 +50,7 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
 
             var topContainerLeft = new VisualElement();
             m_RecommendedBadge = new RecommendationBadge();
+            m_PreReleaseBadge = new PreReleaseBadge();
             
             m_InstalledIcon = new Image() { name = "icon-package-installed" };
             m_InstalledIcon.AddToClassList("icon");
@@ -58,6 +60,7 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
             topContainerLeft.Add(m_RadioButton);
             topContainerLeft.Add(m_PackageNameLabel);
             topContainerLeft.Add(m_RecommendedBadge);
+            topContainerLeft.Add(m_PreReleaseBadge);
 
             topContainerLeft.Add(m_InstalledIcon);
             topContainerLeft.AddToClassList("recommendation-item-top-left-container");
@@ -92,15 +95,12 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
         public void UpdateData(RecommendedPackageViewData package)
         {
             var featureName = package.Name;
+            
+            m_PreReleaseBadge.style.display = string.IsNullOrEmpty(package.PreReleaseVersion)? DisplayStyle.None : DisplayStyle.Flex;
+            
             var featureId = package.PackageId;
             FeatureId = featureId;
-
-            // temp hack to disable distributed authority without removing it from scoring.
-            if (MultiplayerCenterWindow.IgnoreDistributedAuthority)
-            {
-                var hideDistributedAuthority = featureId.StartsWith("Distributed Authority"); 
-                style.display = hideDistributedAuthority ? DisplayStyle.None : DisplayStyle.Flex;
-            }
+            
             SetFeatureName(featureName);
             SetIsSelected(package.Selected);
             SetRecommendationType(package.RecommendationType);
@@ -225,7 +225,16 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
 
         public RecommendationBadge()
         {
-            AddToClassList("recommended-badge");
+            AddToClassList("badge");
+        }
+    }
+
+    internal class PreReleaseBadge : Label
+    {
+        public PreReleaseBadge() : base ("Pre") 
+        {
+            AddToClassList("badge");
+            AddToClassList("pre-release-badge");
         }
     }
 }

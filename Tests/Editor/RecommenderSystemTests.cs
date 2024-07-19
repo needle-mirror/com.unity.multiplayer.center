@@ -14,6 +14,14 @@ namespace Unity.MultiplayerCenterTests
     class RecommenderSystemUnitTests
     {
         const string k_NoNetcodeTitle = "No Netcode";
+        
+        [SetUp]
+        [TearDown]
+        public void Cleanup()
+        {
+            UnityEngine.Object.DestroyImmediate(RecommenderSystemDataObject.instance); // force reload from disk if accessed
+        }
+        
         [Test]
         public void TestEmptyQuestionnaireAndAnswer_ThrowsArgumentException()
         {
@@ -28,7 +36,7 @@ namespace Unity.MultiplayerCenterTests
         public void TestEmptyQuestionnaire_ThrowsArgumentException()
         {
             var questionnaireData = new QuestionnaireData();
-            var answerData = RecommendationTestsUtils.BuildAnswerMatching(RecommendationTestsUtils.GetProjectQuestionnaire());
+            var answerData = UtilsForRecommendationTests.BuildAnswerMatching(UtilsForRecommendationTests.GetProjectQuestionnaire());
 
             // Having an empty questionnaire is an invalid state and should be caught. 
             Assert.Throws<ArgumentException>(() => RecommenderSystem.GetRecommendation(questionnaireData, answerData));
@@ -37,7 +45,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void TestEmptyAnswer_ReturnsNull()
         {
-            var questionnaireData = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaireData = UtilsForRecommendationTests.GetProjectQuestionnaire();
             var answerData = new AnswerData();
 
             // Having empty answers is a normal state, where we don't have any recommendation to make.
@@ -48,8 +56,8 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void TestGetRecommendationForMatchingAnswers_NothingNull()
         {
-            var questionnaireData = RecommendationTestsUtils.GetProjectQuestionnaire();
-            var answerData = RecommendationTestsUtils.BuildAnswerMatching(questionnaireData);
+            var questionnaireData = UtilsForRecommendationTests.GetProjectQuestionnaire();
+            var answerData = UtilsForRecommendationTests.BuildAnswerMatching(questionnaireData);
             var recommendation = RecommenderSystem.GetRecommendation(questionnaireData, answerData);
             Assert.NotNull(recommendation);
 
@@ -57,12 +65,12 @@ namespace Unity.MultiplayerCenterTests
             {
                 if (solution.Solution is PossibleSolution.CustomNetcode or PossibleSolution.NoNetcode) continue;
 
-                RecommendationTestsUtils.AssertRecommendedSolutionNotNull(solution);
+                UtilsForRecommendationTests.AssertRecommendedSolutionNotNull(solution);
             }
 
             foreach (var solution in recommendation.ServerArchitectureOptions)
             {
-                RecommendationTestsUtils.AssertRecommendedSolutionNotNull(solution, false);
+                UtilsForRecommendationTests.AssertRecommendedSolutionNotNull(solution, false);
             }
         }
 
@@ -70,14 +78,14 @@ namespace Unity.MultiplayerCenterTests
         public void TestSolutionToPackageViewData_NothingNull()
         {
             var allPackages = RecommenderSystem.GetSolutionsToRecommendedPackageViewData();
-            RecommendationTestsUtils.AssertAllRecommendedPackageNotNull(allPackages);
+            UtilsForRecommendationTests.AssertAllRecommendedPackageNotNull(allPackages);
         }
 
         [Test]
         public void TestGetRecommendationForMatchingAnswers_OnlyOneMainArchitecturePerCategory()
         {
-            var questionnaireData = RecommendationTestsUtils.GetProjectQuestionnaire();
-            var answerData = RecommendationTestsUtils.BuildAnswerMatching(questionnaireData);
+            var questionnaireData = UtilsForRecommendationTests.GetProjectQuestionnaire();
+            var answerData = UtilsForRecommendationTests.BuildAnswerMatching(questionnaireData);
             var recommendation = RecommenderSystem.GetRecommendation(questionnaireData, answerData);
             AssertNoNetcodeIsTheLastNetcodeRecommendation(recommendation);
             Assert.AreEqual(1, recommendation.NetcodeOptions.Count(x => x.RecommendationType == RecommendationType.MainArchitectureChoice));
@@ -148,6 +156,61 @@ namespace Unity.MultiplayerCenterTests
             }
         }
         
+        // Regression test: selecting back and forth between netcode options should not change whether some solutions
+        // are compatible or not
+        [Test]
+        public void TestAdaptRecommendationToNetcodeSelection_SelectBackAndForthDoesNotChangeRecommendations()
+        {
+            var recommendation = UtilsForRecommendationTests.ComputeRecommendationForPreset(Preset.Adventure);
+            var selectedNetcode = RecommendationUtils.GetSelectedNetcode(recommendation);
+            Assert.AreEqual(PossibleSolution.NGO, selectedNetcode.Solution, "Wrong test setup: expected NGO to be selected");
+            AssertCompatibilityInView(true, PossibleSolution.DA, recommendation.ServerArchitectureOptions, "Wrong test setup: expected DA to be compatible");
+
+            UtilsForRecommendationTests.SimulateSelectionChange(PossibleSolution.N4E, recommendation.NetcodeOptions);
+            RecommenderSystem.AdaptRecommendationToNetcodeSelection(recommendation);
+            Assert.AreEqual(PossibleSolution.N4E, RecommendationUtils.GetSelectedNetcode(recommendation).Solution, "Wrong test setup: expected N4E to be selected");
+            AssertCompatibilityInView(false, PossibleSolution.DA, recommendation.ServerArchitectureOptions,"Wrong test setup: expected DA to be incompatible with N4E");
+
+            UtilsForRecommendationTests.SimulateSelectionChange(PossibleSolution.NGO, recommendation.NetcodeOptions);
+            RecommenderSystem.AdaptRecommendationToNetcodeSelection(recommendation);
+            Assert.AreEqual(PossibleSolution.NGO, RecommendationUtils.GetSelectedNetcode(recommendation).Solution, "Wrong test setup: expected NGO to be selected");
+            AssertCompatibilityInView(true, PossibleSolution.DA, recommendation.ServerArchitectureOptions, "Fail: expected DA to still be compatible with NGO after selecting other solution");
+        }
+
+        [Test]
+        public void TestAdaptIncompatibility_AllValuesMatch()
+        {
+            bool ngoDaCompatibleBefore = AreCompatible(PossibleSolution.NGO, PossibleSolution.DA);
+            Assert.True(ngoDaCompatibleBefore, "Wrong test setup: expected NGO to be compatible with DA");
+            
+            var ngoSolBefore = GetSolution(PossibleSolution.NGO);
+            Assert.AreEqual(-1, Array.FindIndex(ngoSolBefore.IncompatibleSolutions, s => s.Solution == PossibleSolution.DA), "Wrong test setup: expected DA to be in the incompatible list of NGO");
+            
+            RecommenderSystemDataObject.instance.RecommenderSystemData.UpdateIncompatibility(PossibleSolution.NGO, 
+                PossibleSolution.DA, false, "test");
+            
+            bool ngoDaCompatibleAfter = AreCompatible(PossibleSolution.NGO, PossibleSolution.DA);
+            Assert.False(ngoDaCompatibleAfter);
+            
+            var ngoSolAfter = GetSolution(PossibleSolution.NGO);
+            Assert.AreNotEqual(-1, Array.FindIndex(ngoSolAfter.IncompatibleSolutions, s => s.Solution == PossibleSolution.DA));
+            
+            RecommenderSystemDataObject.instance.RecommenderSystemData.UpdateIncompatibility(PossibleSolution.NGO, PossibleSolution.DA, true);
+          
+            bool ngoDaCompatibleEnd = AreCompatible(PossibleSolution.NGO, PossibleSolution.DA);
+            Assert.True(ngoDaCompatibleEnd, "Wrong test setup: expected NGO to be compatible with DA");
+            
+            var ngoSolEnd = GetSolution(PossibleSolution.NGO);
+            Assert.AreEqual(-1, Array.FindIndex(ngoSolEnd.IncompatibleSolutions, s => s.Solution == PossibleSolution.DA));
+        }
+        
+        static bool AreCompatible(PossibleSolution netcode, PossibleSolution hostingModel)
+            => RecommenderSystemDataObject.instance.RecommenderSystemData.IsHostingModelCompatibleWithNetcode(
+                PossibleSolution.NGO, PossibleSolution.DA, out _);
+        
+        static RecommendedSolution GetSolution(PossibleSolution type)
+            => RecommenderSystemDataObject.instance.RecommenderSystemData.SolutionsByType[type];
+        
         static void AssertNoNetcodeIsTheLastNetcodeRecommendation(RecommendationViewData recommendation)
         {
             var netcodeSolutionCount = recommendation.NetcodeOptions.Length;
@@ -155,6 +218,20 @@ namespace Unity.MultiplayerCenterTests
             var lastSolution = recommendation.NetcodeOptions[netcodeSolutionCount - 1];
             Assert.AreEqual(k_NoNetcodeTitle, lastSolution.Title);
             Assert.False(lastSolution.Selected);
+        }
+
+        static void AssertCompatibilityInView(bool expectedCompatible, PossibleSolution hostingModel, RecommendedSolutionViewData[] hostingSolutions, string msg)
+        {
+            foreach (var hosting in hostingSolutions)
+            {
+                if(hosting.Solution == hostingModel)
+                {
+                    if(expectedCompatible)
+                        Assert.AreNotEqual(RecommendationType.Incompatible, hosting.RecommendationType, msg);
+                    else
+                        Assert.AreEqual(RecommendationType.Incompatible, hosting.RecommendationType, msg);
+                }
+            }
         }
     }
 }

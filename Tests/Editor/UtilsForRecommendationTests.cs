@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Unity.MultiplayerCenterTests
 {
-    internal static class RecommendationTestsUtils
+    internal static class UtilsForRecommendationTests
     {
         public static QuestionnaireData GetProjectQuestionnaire()
         {
@@ -99,6 +99,40 @@ namespace Unity.MultiplayerCenterTests
         public static T Clone<T>(T obj)
         {
             return JsonUtility.FromJson<T>(JsonUtility.ToJson(obj));
+        }
+
+        public static RecommendationViewData ComputeRecommendationForPreset(Preset preset, string playerCount = "4")
+        {
+            var questionnaireData = UtilsForRecommendationTests.GetProjectQuestionnaire();
+            var answerData = GetAnswerDataForPreset(questionnaireData, preset, playerCount);
+            var recommendation = RecommenderSystem.GetRecommendation(questionnaireData, answerData);
+            return recommendation;
+        }
+
+        public static AnswerData GetAnswerDataForPreset(QuestionnaireData questionnaireData, Preset preset, string playerCount)
+        {
+            if (preset == Preset.None)
+                return new AnswerData();
+
+            var indexOfPreset = Array.IndexOf(questionnaireData.PresetData.Presets, preset);
+            var matchingAnswers = questionnaireData.PresetData.Answers[indexOfPreset].Clone();
+            var playerCountAnswer = new AnsweredQuestion()
+            {
+                QuestionId = "PlayerCount",
+                Answers = new() {playerCount}
+            };
+            Logic.Update(matchingAnswers, playerCountAnswer);
+            return matchingAnswers;
+        }
+
+        public static void SimulateSelectionChange(PossibleSolution newSelectedSolution, RecommendedSolutionViewData[] solutionViewDatas)
+        {
+            foreach (var solution in solutionViewDatas)
+            {
+                solution.Selected = solution.Solution == newSelectedSolution;
+                if(solution.Selected && solution.RecommendationType == RecommendationType.Incompatible)
+                    Assert.Fail("Selected incompatible solution");
+            }
         }
     }
 }

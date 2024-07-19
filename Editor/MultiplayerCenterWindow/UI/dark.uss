@@ -14,4 +14,10 @@
     --card-poster-image-bg-color: #222222;
     --theme-slider-background-color:#5E5E5E; /* From Default common dark uss */
     --badge-color-grey:#C4C4C4; /* From Default common dark uss, feedback color */
+    --pre-release-badge-color: #FFC107;
+    --pre-release-badge-color-bg: #1D1E1F;
+    --link-color: var(--unity-colors-label-text-focus);
+    --tab-button-highlight-color: #DEDEDE;
+    --onboarding-button-selected-text-color: #EEEEEE;
+    --three-dot-icon: resource("UIBuilderPackageResources/Icons/Dark/Inspector/Status/Settings.png");
 }

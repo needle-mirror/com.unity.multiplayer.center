@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Questionnaire;
+using Unity.Multiplayer.Center.Recommendations;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -12,8 +12,6 @@ namespace Unity.Multiplayer.Center.Window.UI
     {
         public VisualElement Root { get; private set; }
         readonly QuestionnaireData m_Questions;
-
-        bool AllQuestionsAnswered => m_Questions.Questions.All(x => UserChoicesObject.instance.UserAnswers.Answers.Any(y => y.QuestionId == x.Id));
 
         public event Action OnQuestionnaireDataChanged;
         public event Action<Preset> OnPresetSelected;
@@ -72,7 +70,7 @@ namespace Unity.Multiplayer.Center.Window.UI
         {
             Logic.Update(UserChoicesObject.instance.UserAnswers, answeredQuestion);
             UserChoicesObject.instance.Save();
-            if (AllQuestionsAnswered)
+            if (IsAllQuestionsAnswered())
             {
                 OnQuestionnaireDataChanged?.Invoke();
             }
@@ -82,6 +80,19 @@ namespace Unity.Multiplayer.Center.Window.UI
         internal void RaisePresetSelected(Preset preset)
         {
             OnPresetSelected?.Invoke(preset);
+        }
+        
+        bool IsAllQuestionsAnswered()
+        {
+            foreach (var question in m_Questions.Questions)
+            {
+                if (!RecommendationUtils.IsQuestionAnswered(question))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

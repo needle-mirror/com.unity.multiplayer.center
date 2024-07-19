@@ -32,10 +32,10 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
             m_MainDropdown.RegisterValueChangedCallback(OnItemSelected);
         }
 
-        public void UpdateData(RecommendedSolutionViewData[] availableNetcodeSolutions)
+        public void UpdateData(RecommendedSolutionViewData[] availableSolutions)
         {
-            m_Solutions = availableNetcodeSolutions;
-            m_MainDropdown.choices = GenerateChoices(availableNetcodeSolutions, out var selectedSolution, out var solutionTitleWithAppend);
+            m_Solutions = availableSolutions;
+            m_MainDropdown.choices = GenerateChoices(availableSolutions, out var selectedSolution, out var solutionTitleWithAppend);
             var iconClass = "icon-" + selectedSolution.Solution;
             m_PosterImageIcon.ClearClassList();
             m_PosterImageIcon.AddToClassList(iconClass);
@@ -46,29 +46,23 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
         /// <summary>
         /// Returns a list of choices for the dropdown and appends k_ItemIsRecommendedAppend to the recommended choice.
         /// </summary>
-        /// <param name="availableNetcodeSolutions">All available Solutions</param>
+        /// <param name="availableSolutions">All available Solutions</param>
         /// <param name="selectedSolution"> The solution that is selected.</param>
         /// <param name="selectedSolutionTitleAppended">The title of the selection solution with appended k_ItemIsRecommendedAppend</param>
         /// <returns>List of Choices to be used with Dropdown</returns>
-        List<string> GenerateChoices(RecommendedSolutionViewData[] availableNetcodeSolutions, out RecommendedSolutionViewData selectedSolution, out string selectedSolutionTitleAppended)
+        static List<string> GenerateChoices(RecommendedSolutionViewData[] availableSolutions, out RecommendedSolutionViewData selectedSolution, out string selectedSolutionTitleAppended)
         {
-            var choices = new List<string>(availableNetcodeSolutions.Length);
+            var choices = new List<string>(availableSolutions.Length);
             selectedSolutionTitleAppended = null;
             selectedSolution = null;
 
-            foreach (var sol in availableNetcodeSolutions)
+            foreach (var sol in availableSolutions)
             {
-                switch (sol.RecommendationType)
-                {
-                    case RecommendationType.Incompatible:
-                        continue;
-                    case RecommendationType.MainArchitectureChoice:
-                        choices.Add(sol.Title + k_ItemIsRecommendedAppend);
-                        break;
-                    default:
-                        choices.Add(sol.Title);
-                        break;
-                }
+                if(sol.RecommendationType == RecommendationType.Incompatible)
+                    continue;
+
+                var isRecommended = sol.RecommendationType == RecommendationType.MainArchitectureChoice;
+                choices.Add(isRecommended ? sol.Title + k_ItemIsRecommendedAppend : sol.Title);
 
                 if (sol.Selected)
                 {
@@ -79,8 +73,8 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
 
             return choices;
         }
-       
-        string RemoveRecommendationString(string choice)
+
+        static string RemoveRecommendationString(string choice)
         {
             return choice.Replace(k_ItemIsRecommendedAppend, "");
         }

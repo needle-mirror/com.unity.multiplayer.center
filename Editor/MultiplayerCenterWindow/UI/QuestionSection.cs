@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Questionnaire;
+using Unity.Multiplayer.Center.Recommendations;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -16,6 +16,7 @@ namespace Unity.Multiplayer.Center.Window.UI
     /// </summary>
     internal class QuestionSection : VisualElement
     {
+        EnumField m_PresetDropdown;
         public VisualElement ContentRoot { get; private set; }
         public event Action<AnsweredQuestion> QuestionUpdated;
 
@@ -46,7 +47,7 @@ namespace Unity.Multiplayer.Center.Window.UI
         {
             var title = new VisualElement();
             title.Add(new Label() {text = headerTitle});
-            title.AddToClassList("view-headline");
+            title.AddToClassList(StyleClasses.ViewHeadline);
             Add(title);
             
             var withScrollView = !mandatoryQuestions;
@@ -63,6 +64,18 @@ namespace Unity.Multiplayer.Center.Window.UI
 
                 ContentRoot.Add(CreateSingleQuestionView(questions[index], existingAnswers));
             }
+
+            Undo.undoRedoPerformed += OnUndoRedoPerformed;
+        }
+
+        ~QuestionSection()
+        {
+            Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+        }
+
+        void OnUndoRedoPerformed()
+        {
+            m_PresetDropdown?.SetValueWithoutNotify(UserChoicesObject.instance.Preset);
         }
 
         public void AddPresetView()
@@ -82,7 +95,9 @@ namespace Unity.Multiplayer.Center.Window.UI
 
         VisualElement CreateSingleQuestionView(Question question, IEnumerable<AnsweredQuestion> existingAnswers)
         {
-            var existingAnswer = existingAnswers.FirstOrDefault(x => x.QuestionId == question.Id) ?? new AnsweredQuestion() {QuestionId = question.Id};
+            Logic.TryGetAnswerByQuestionId(existingAnswers, question.Id, out var existingAnswer);
+            existingAnswer ??= new AnsweredQuestion { QuestionId = question.Id };
+            
             var questionView = GetQuestionHeader(question, out var questionContainer);
             questionContainer.Add(QuestionViewFactory.CreateQuestionViewInput(question, existingAnswer, RaiseQuestionUpdated));
             return questionView;
@@ -111,20 +126,22 @@ namespace Unity.Multiplayer.Center.Window.UI
 
         EnumField PresetDropdown()
         {
-            var presetDropdown = new EnumField(UserChoicesObject.instance.Preset);
-            var serializedObject = new SerializedObject(UserChoicesObject.instance);
-            var prop = serializedObject.FindProperty(nameof(UserChoicesObject.instance.Preset));
-            presetDropdown.BindProperty(prop);
-            presetDropdown.RegisterValueChangedCallback(RaiseValueChangedCallback);
-            presetDropdown.name = "preset-dropdown";
-            presetDropdown.tooltip = "Select your game type";
-            return presetDropdown;
+            m_PresetDropdown = new EnumField(UserChoicesObject.instance.Preset);
+            m_PresetDropdown.RegisterValueChangedCallback(RaiseValueChangedCallback);
+            m_PresetDropdown.name = "preset-dropdown";
+            m_PresetDropdown.tooltip = "Select your game type";
+            return m_PresetDropdown;
         }
 
         void RaiseValueChangedCallback(ChangeEvent<Enum> eventData)
         {
             if (!Equals(eventData.newValue, eventData.previousValue))
-                OnPresetSelected?.Invoke((Preset) eventData.newValue);
+            {
+                Undo.RecordObject(UserChoicesObject.instance, "Selected Preset");
+                var newVal = (Preset) eventData.newValue;
+                UserChoicesObject.instance.Preset = newVal;
+                OnPresetSelected?.Invoke(newVal);
+            }
         }
         
         public void SetAdvancedSectionVisible (bool isVisible){

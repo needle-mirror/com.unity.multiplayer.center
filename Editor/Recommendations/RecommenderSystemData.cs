@@ -63,6 +63,20 @@ namespace Unity.Multiplayer.Center.Recommendations
             return !m_IncompatibleHostingModels.TryGetValue(new SolutionSelection(netcode, hostingModel), out reason);
         }
 
+        /// <summary>
+        /// Patch incompatibility values.
+        /// </summary>
+        /// <param name="netcode">Netcode solution</param>
+        /// <param name="hostingModel">Hosting model solution</param>
+        /// <param name="newIsCompatible">Whether we should now consider the two solutions compatible</param>
+        /// <param name="reason">If incompatible, why it is incompatible.</param>
+        internal void UpdateIncompatibility(PossibleSolution netcode, PossibleSolution hostingModel, bool newIsCompatible, string reason=null)
+        {
+            Utils.UpdateIncompatibilityInSolutions(RecommendedSolutions, netcode, hostingModel, newIsCompatible, reason);
+            m_IncompatibleHostingModels = Utils.ToDictionary(RecommendedSolutions);
+            m_SolutionsByType = Utils.ToDictionary(RecommendedSolutions, s => s.Type);
+        }
+        
         Dictionary<string, PackageDetails> m_PackageDetailsById;
         Dictionary<PossibleSolution, RecommendedSolution> m_SolutionsByType;
         Dictionary<SolutionSelection, string> m_IncompatibleHostingModels;
@@ -189,6 +203,12 @@ namespace Unity.Multiplayer.Center.Recommendations
         public string[] AdditionalPackages;
 
         /// <summary>
+        /// In case we want to promote a specific pre-release version, this is set (by default, this is null
+        /// and the default package manager version is used).
+        /// </summary>
+        public string PreReleaseVersion;
+
+        /// <summary>
         /// Details about the package.
         /// </summary>
         /// <param name="id">Package ID</param>
@@ -233,6 +253,26 @@ namespace Unity.Multiplayer.Center.Recommendations
             }
 
             return result;
+        }
+        
+        public static void UpdateIncompatibilityInSolutions(RecommendedSolution[] solutions, PossibleSolution netcode, 
+            PossibleSolution hostingModel, bool newIsCompatible, string reason)
+        {
+            foreach (var recommendedSolution in solutions)
+            {
+                if (recommendedSolution.Type != netcode) continue;
+                
+                var incompatibleSolution = Array.Find(recommendedSolution.IncompatibleSolutions, s => s.Solution == hostingModel);
+                if (newIsCompatible && incompatibleSolution != null)
+                {
+                    recommendedSolution.IncompatibleSolutions = Array.FindAll(recommendedSolution.IncompatibleSolutions, s => s.Solution != hostingModel);
+                }
+                else if (!newIsCompatible && incompatibleSolution == null)
+                {
+                    Array.Resize(ref recommendedSolution.IncompatibleSolutions, recommendedSolution.IncompatibleSolutions.Length + 1);
+                    recommendedSolution.IncompatibleSolutions[^1] = new IncompatibleSolution(hostingModel, reason);
+                }
+            }
         }
     }
 }

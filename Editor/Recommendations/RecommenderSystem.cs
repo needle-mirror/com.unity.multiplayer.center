@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Questionnaire;
 using UnityEngine;
@@ -68,12 +67,10 @@ namespace Unity.Multiplayer.Center.Recommendations
         public static void AdaptRecommendationToNetcodeSelection(RecommendationViewData recommendation)
         {
             RecommendationUtils.MarkIncompatibleHostingModels(recommendation);
-            if (RecommendationUtils.GetSelectedHostingModel(recommendation) != null)
-                return; // All good, something is selected
-            
             var maxIndex = RecommendationUtils.IndexOfMaximumScore(recommendation.ServerArchitectureOptions);
-            recommendation.ServerArchitectureOptions[maxIndex].Selected = true;
             recommendation.ServerArchitectureOptions[maxIndex].RecommendationType = RecommendationType.MainArchitectureChoice;
+            if (RecommendationUtils.GetSelectedHostingModel(recommendation) == null)
+                recommendation.ServerArchitectureOptions[maxIndex].Selected = true;
         }
 
         static List<AnswerWithQuestion> CollectAnswers(QuestionnaireData questionnaireData, AnswerData answerData)
@@ -150,9 +147,7 @@ namespace Unity.Multiplayer.Center.Recommendations
 
         static RecommendedSolutionViewData[] BuildRecommendedSolutions(RecommenderSystemData data, (PossibleSolution, Scoring)[] scoredSolutions, Dictionary<string, string> installedPackageDictionary)
         {
-            var maxScore = scoredSolutions.Max(x => x.Item2.TotalScore);
-            var recommendedSolution = scoredSolutions.First(x => Math.Abs(x.Item2.TotalScore - maxScore) < 0.0001).Item1;
-
+            var recommendedSolution = RecommendationUtils.FindRecommendedSolution(scoredSolutions);
             var result = new RecommendedSolutionViewData[scoredSolutions.Length];
             
             for (var index = 0; index < scoredSolutions.Length; index++)
@@ -169,7 +164,7 @@ namespace Unity.Multiplayer.Center.Recommendations
         static RecommendedPackageViewData[] BuildRecommendationForSelection(RecommenderSystemData data, SolutionSelection selection, Dictionary<string, string> installedPackageDictionary)
         {
             // Note: working on a copy that we modify
-            var netcodePackages = data.SolutionsByType[selection.Netcode].RecommendedPackages.ToArray();
+            var netcodePackages = (RecommendedPackage[]) data.SolutionsByType[selection.Netcode].RecommendedPackages.Clone();
             var hostingOverrides = data.SolutionsByType[selection.HostingModel].RecommendedPackages;
             foreach (var package in hostingOverrides)
             {

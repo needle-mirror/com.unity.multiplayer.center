@@ -8,14 +8,14 @@ namespace Unity.MultiplayerCenterTests
     /// Cheap checks on some user visible text.
     /// </summary>
     [TestFixture]
-    internal class UserVisibleTextChecks
+    internal class UserVisibleTextTests
     {
         static readonly string[] k_Verbs = {"is", "offers", "can", "costs", "would", "should", "works", "tends", "enables"};
         
         [Test]
         public void AllScoreImpacts_ShouldHaveANonEmptyReason()
         {
-            var questionnaireData = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaireData = UtilsForRecommendationTests.GetProjectQuestionnaire();
             foreach (var question in questionnaireData.Questions)
             {
                 foreach (var answer in question.Choices)
@@ -33,7 +33,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void AllScoreImpacts_StartWithAVerbAndDoNotEndWithADot()
         {
-            var questionnaireData = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaireData = UtilsForRecommendationTests.GetProjectQuestionnaire();
             foreach (var question in questionnaireData.Questions)
             {
                 foreach (var answer in question.Choices)

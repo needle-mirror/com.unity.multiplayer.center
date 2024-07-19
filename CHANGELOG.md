@@ -3,6 +3,17 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
+## [0.4.0] - 2024-07-19
+
+### Added
+- Added Recommendation for Distributed Authority hosting model with Netcode for GameObjects.
+- Undo support for Recommendation tab.
+
+### Changed
+- Refined the Netcode Recommendation.
+- The Quickstart tab is deactivated if no multiplayer-related package is installed.
+
 ## [0.3.0] - 2024-06-06
 
 ### Added

@@ -22,5 +22,18 @@ namespace Unity.Multiplayer.Center.Window.UI
         
         /// <summary> Thicker button to go to a next step; e.g. Install packages </summary>
         public const string NextStepButton = "next-step-button";
+
+        /// <summary> The splitview that is used in Recommendation and Getting Started Tab </summary>
+        public const string MainSplitView = "main-split-view";
+
+        /// <summary> The right container of the main split view </summary>
+        public const string MainSplitViewRight = "main-split-view-right";
+        
+        /// <summary> The left container of the main split view </summary>
+        public const string MainSplitViewLeft = "main-split-view-left";
+        
+        /// <summary> The style for the Headline that is used in the main views </summary>
+        public const string ViewHeadline = "view-headline";
+       
     }
 }

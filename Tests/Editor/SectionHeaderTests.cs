@@ -47,7 +47,7 @@ namespace Unity.MultiplayerCenterTests
             yield return WaitUntilDropdownIsShown();
            
             var dropDown = GetSectionHeader().Q<DropdownField>();
-            var recommendation = RecommendationTestsUtils.GetSomeRecommendation();
+            var recommendation = UtilsForRecommendationTests.GetSomeRecommendation();
             var serverChoices = recommendation.ServerArchitectureOptions;
             var serverChoice = serverChoices.First(sol => sol.RecommendationType == RecommendationType.MainArchitectureChoice);
             GetSectionHeader().UpdateData(recommendation.ServerArchitectureOptions);
@@ -60,7 +60,7 @@ namespace Unity.MultiplayerCenterTests
             yield return WaitUntilDropdownIsShown();
             
             var dropDown = GetSectionHeader().Q<DropdownField>();
-            var recommendation = RecommendationTestsUtils.GetSomeRecommendation();
+            var recommendation = UtilsForRecommendationTests.GetSomeRecommendation();
             var serverChoices = recommendation.ServerArchitectureOptions;
             serverChoices.Last().RecommendationType = RecommendationType.Incompatible;
             GetSectionHeader().UpdateData(recommendation.ServerArchitectureOptions);

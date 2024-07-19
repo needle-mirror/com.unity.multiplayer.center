@@ -23,6 +23,12 @@ namespace Unity.Multiplayer.Center.Onboarding
         /// Applicable to <c>VisualElement</c>
         /// </summary>
         public const string OnBoardingSectionClass = "onboarding-section";
+
+        /// <summary>
+        /// Default style for the title of an onboarding section
+        /// Apply to the title visual element (<c>Label</c>) in Onboarding section
+        /// </summary>
+        public const string OnboardingSectionTitle = "onboarding-section-title";
         
         /// <summary>
         /// Button inside the header of a onboarding-section

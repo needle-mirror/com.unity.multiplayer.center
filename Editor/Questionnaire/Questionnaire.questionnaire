@@ -17,7 +17,7 @@ MonoBehaviour:
     Version: 1.3
     Questions:
     - Id: PlayerCount
-      Title: Player Count
+      Title: Number of Players per Session
       Description: The number of expected players in a session influences the Netcode
         stack and the hosting model.
       GlobalWeight: 1
@@ -28,7 +28,7 @@ MonoBehaviour:
         Description: 
         ScoreImpacts:
         - Solution: 0
-          Score: 0.3
+          Score: 0.7
           Comment: can be used for 2 player games
         - Solution: 2
           Score: 0.8
@@ -41,10 +41,10 @@ MonoBehaviour:
         Description: 
         ScoreImpacts:
         - Solution: 0
-          Score: 0.2
+          Score: 0.7
           Comment: can be used for 4 player games
         - Solution: 2
-          Score: 0.76
+          Score: 0.7
           Comment: is possible with 4 players
         - Solution: 4
           Score: 0.2
@@ -53,6 +53,9 @@ MonoBehaviour:
         Title: 8
         Description: 
         ScoreImpacts:
+        - Solution: 0
+          Score: 0.7
+          Comment: can be used for 8 player games
         - Solution: 4
           Score: 0.2
           Comment: can handle 8 players
@@ -64,27 +67,24 @@ MonoBehaviour:
         Description: 
         ScoreImpacts:
         - Solution: 1
-          Score: 0.4
-          Comment: is a good choice with 16 players
+          Score: 0.5
+          Comment: can be used for 16 player games
         - Solution: 3
           Score: 0.5
-          Comment: is necessary with a high number
-            of players
+          Comment: is necessary with a high number of players
         - Solution: 4
           Score: 0.3
-          Comment: can work up to 16 players
+          Comment: can handle 16 players
       - Id: 64+
         Title: 64
         Description: 
         ScoreImpacts:
         - Solution: 1
-          Score: 0.6
-          Comment: should be used for a very high number of
-            players
+          Score: 0.5
+          Comment: can be used for 64 player games
         - Solution: 3
           Score: 1
-          Comment: is necessary with a high number
-            of players
+          Comment: is necessary with a high number of players
         - Solution: 4
           Score: 0.3
           Comment: can handle 64 players
@@ -93,9 +93,8 @@ MonoBehaviour:
         Description: 
         ScoreImpacts:
         - Solution: 1
-          Score: 0.6
-          Comment: should be used for a very high number of
-            players
+          Score: 10
+          Comment: should be used for a very high number of players
         - Solution: 3
           Score: 1000
           Comment: is necessary with a high number of players
@@ -104,18 +103,17 @@ MonoBehaviour:
         Description: 
         ScoreImpacts:
         - Solution: 1
-          Score: 0.6
+          Score: 10
           Comment: should be used for a very high number of players
         - Solution: 3
           Score: 1000
-          Comment: is necessary with a high number
-            of players
+          Comment: is necessary with a high number of players
       - Id: 512
         Title: 512+
         Description: 
         ScoreImpacts:
         - Solution: 1
-          Score: 0.6
+          Score: 10
           Comment: should be used for a very high number of players
         - Solution: 3
           Score: 1000
@@ -125,7 +123,7 @@ MonoBehaviour:
       Title: Gameplay Pace
       Description: Gameplay pace indicates how sensitive gameplay is to latency.
         The amount of latency you expect impacts Netcode stacks and hosting models.
-      GlobalWeight: 0.5
+      GlobalWeight: 1
       ViewType: 0
       Choices:
       - Id: Slow
@@ -133,26 +131,26 @@ MonoBehaviour:
         Description: 
         ScoreImpacts:
         - Solution: 0
-          Score: 0.4
+          Score: 0.7
           Comment: can be used for slow-paced games
         - Solution: 2
-          Score: 0.5
+          Score: 0.25
           Comment: is sufficient for Slow Games
         - Solution: 4
-          Score: 0.5
+          Score: 0.25
           Comment: works well with slow games
       - Id: Fast
         Title: Fast
         Description: 
         ScoreImpacts:
         - Solution: 1
-          Score: 0.5
+          Score: 0.75
           Comment: tends to be better for fast paced games
         - Solution: 3
-          Score: 2
+          Score: 1
           Comment: is recommended for fast games
         - Solution: 4
-          Score: 1.3
+          Score: 0.65
           Comment: can handle fast gameplay
       IsMandatory: 0
     - Id: Cheating
@@ -170,6 +168,9 @@ MonoBehaviour:
         - Solution: 2
           Score: 0.2
           Comment: is more cost-effective if cheating is not very important
+        - Solution: 0
+          Score: 0.6
+          Comment: is preferred if cheating prevention is not so important
       - Id: CheatingImportant
         Title: Very important
         Description: 
@@ -177,6 +178,9 @@ MonoBehaviour:
         - Solution: 3
           Score: 1000
           Comment: is required if cheating prevention is important
+        - Solution: 1
+          Score: 0.5
+          Comment: is preferred if cheating prevention is important
       IsMandatory: 0
     - Id: CostSensitivity
       Title: Cost Sensitivity
@@ -195,6 +199,9 @@ MonoBehaviour:
         - Solution: 4
           Score: 1.2
           Comment: offers good performance
+        - Solution: 1
+          Score: 0.85
+          Comment: offers good performance
       - Id: BestMargin
         Title: Favor best operating costs
         Description: At the expense of some degradation of the player experience, smart relay solutions can provide a cost-effective solution before adopting dedicated cloud-hosted servers.
@@ -205,6 +212,9 @@ MonoBehaviour:
         - Solution: 4
           Score: 0.5
           Comment: is not expensive
+        - Solution: 0
+          Score: 0.5
+          Comment: is a good compromise if you want to optimize your operating costs
       - Id: NoCost
         Title: As little cost as possible
         Description: Avoiding backend costs usually involves implementing a client-hosted solution.
@@ -218,6 +228,9 @@ MonoBehaviour:
         - Solution: 4
           Score: 0.3
           Comment: is not expensive
+        - Solution: 1
+          Score: 0.5
+          Comment: is performant and enables you to reduce compute costs
       IsMandatory: 0
     - Id: NetcodeArchitecture
       Title: Netcode Architecture
@@ -259,7 +272,7 @@ MonoBehaviour:
           Score: 1000
           Comment: is necessary
         - Solution: 7
-          Score: 2000
+          Score: 3000
           Comment: enables you to run your game logic in the cloud as serverless functions
       IsMandatory: 0
     PresetData:
@@ -375,7 +388,7 @@ MonoBehaviour:
           - Slow
         - QuestionId: Cheating
           Answers:
-          - CheatingNotImportant
+          - CheatingImportant
         - QuestionId: CostSensitivity
           Answers:
           - BestMargin

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Multiplayer.Center.Analytics;
-using Unity.Multiplayer.Center.Onboarding;
 using Unity.Multiplayer.Center.Questionnaire;
 using Unity.Multiplayer.Center.Recommendations;
 using Unity.Multiplayer.Center.Window.UI;
@@ -19,7 +17,8 @@ namespace Unity.Multiplayer.Center.Window
         IMultiplayerCenterAnalytics m_Analytics;
 
         MultiplayerCenterWindow m_Window = EditorWindow.GetWindow<MultiplayerCenterWindow>();
-        List<PackageDetails> m_PackagesToInstall = new ();
+        List<string> m_PackagesToInstallIds = new ();
+        List<string> m_PackagesToInstallNames = new ();
         RecommendationViewData m_RecommendationViewData;
         SolutionsToRecommendedPackageViewData m_SolutionToPackageData;
 
@@ -61,7 +60,7 @@ namespace Unity.Multiplayer.Center.Window
         {
             var warningMessage =
                 "Ensure compatibility with your current multiplayer packages before installing or upgrading the following:\n" +
-                string.Join("\n", m_PackagesToInstall.ConvertAll(p => p.Name));
+                string.Join("\n", m_PackagesToInstallNames);
             return EditorUtility.DisplayDialog("Install Packages", warningMessage, "OK", "Cancel");
         }
 
@@ -69,10 +68,7 @@ namespace Unity.Multiplayer.Center.Window
         {
             m_Window.SetSpinnerIconRotating();
             m_Window.rootVisualElement.SetEnabled(false);
-
-            var toInstall = m_PackagesToInstall.ConvertAll(p => p.Id);
-            toInstall.Add(QuickstartIsMissingView.PackageId);
-            PackageManagement.InstallPackages(toInstall, onAllInstalled: OnInstallationFinished);
+            PackageManagement.InstallPackages(m_PackagesToInstallIds, onAllInstalled: OnInstallationFinished);
         }
 
         void OnInstallationFinished(bool success)
@@ -86,12 +82,13 @@ namespace Unity.Multiplayer.Center.Window
             m_RecommendationViewData = data;
             m_SolutionToPackageData = packageViewData;
             var packages = RecommendationUtils.PackagesToInstall(data, packageViewData);
-            m_PackagesToInstall = RecommendationUtils.GetPackagesWithAdditionalPackages(packages.Select(p => p.PackageId).ToList(), out var toolTip);
+            RecommendationUtils.GetPackagesWithAdditionalPackages(packages, out m_PackagesToInstallIds, out m_PackagesToInstallNames, out var toolTip);
             m_PackageCount.tooltip = toolTip;
 
-            m_PackageCount.text = $"Packages to install: {m_PackagesToInstall.Count}";
-            //if the list is empty, disable the button
-            m_InstallPackageButton.SetEnabled(m_PackagesToInstall.Count > 0);
+            // Note: quickstart is counted in the list of packages to install, but not the names
+            m_PackageCount.text = $"Packages to install: {m_PackagesToInstallNames.Count}";
+            // if the list is empty, disable the button
+            m_InstallPackageButton.SetEnabled(m_PackagesToInstallNames.Count > 0);
         }
     }
 }

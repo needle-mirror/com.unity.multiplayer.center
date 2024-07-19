@@ -14,20 +14,20 @@ namespace Unity.MultiplayerCenterTests
         public void OneTimeSetup()
         {
             // Copy user choices to temp file to restore after tests.
-            MultiplayerCenterTestUtils.CopyUserChoicesToTempFile();
+            UtilsForMultiplayerCenterTests.CopyUserChoicesToTempFile();
         }
 
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
             // Restore user choices after tests.
-            MultiplayerCenterTestUtils.RestoreUserChoicesFromTempFile();
+            UtilsForMultiplayerCenterTests.RestoreUserChoicesFromTempFile();
         }
         
         [Test]
         public void TestMigration_Pre1_2To1_2_RemovesCompetitivenessButNothingElse()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
             questionnaire.Version = "1.2";
             var userAnswers = new AnswerData()
             {
@@ -66,7 +66,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void TestMigration_1_2To1_3_ChangesMediumPaceToSlow()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
             questionnaire.Version = "1.3";
             var userAnswers = new AnswerData()
             {
@@ -99,7 +99,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void TestMigration_SameVersion_RemovesNothing()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
             var userAnswers = new AnswerData()
             {
                 Answers = new List<AnsweredQuestion>()

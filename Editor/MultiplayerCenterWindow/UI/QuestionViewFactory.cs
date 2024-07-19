@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Questionnaire;
+using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 using Toggle = UnityEngine.UIElements.Toggle;
 
@@ -54,8 +55,12 @@ namespace Unity.Multiplayer.Center.Window.UI
         static VisualElement CreateDropDown(Question question, AnsweredQuestion answer, Action<AnsweredQuestion> onAnswerChanged)
         {
             var dropdown = new DropdownField();
-            var choices= question.Choices.Select(t => t.Title);
-            dropdown.choices = choices.ToList();
+            var choices = new List<string>(question.Choices.Length);
+            foreach (var choice in question.Choices)
+            {
+                choices.Add(choice.Title);
+            }
+            dropdown.choices = choices;
             
             if (answer.Answers?.Count > 0)
             {
@@ -65,8 +70,18 @@ namespace Unity.Multiplayer.Center.Window.UI
             
             dropdown.RegisterValueChangedCallback(evt =>
             {
-                var selected = question.Choices.First(choice => choice.Title == evt.newValue);
-                answer.Answers = new List<string>(1) {selected.Id};
+                RecordUndo();
+                string selectedId = default;
+                foreach (var choice in question.Choices)
+                {
+                    if (choice.Title == evt.newValue)
+                    {
+                        selectedId = choice.Id;
+                        break;
+                    }
+                }
+
+                answer.Answers = new List<string>(1) {selectedId};
                 onAnswerChanged?.Invoke(answer);
             });            
             return dropdown;
@@ -91,6 +106,7 @@ namespace Unity.Multiplayer.Center.Window.UI
 
         static void UpdateAnswersWithCheckBoxes(AnsweredQuestion question, string id, bool newValue, Action<AnsweredQuestion> onAnswerChanged)
         {
+            RecordUndo();
             if (newValue && !question.Answers.Contains(id))
             {
                 question.Answers.Add(id);
@@ -125,6 +141,7 @@ namespace Unity.Multiplayer.Center.Window.UI
 
             group.RegisterValueChangedCallback(evt =>
             {
+                RecordUndo();
                 answeredQuestion.Answers = new List<string>(1) {question.Choices[evt.newValue].Id};
                 onAnswerChanged?.Invoke(answeredQuestion);
             });
@@ -135,6 +152,11 @@ namespace Unity.Multiplayer.Center.Window.UI
         public static VisualElement CreateToggle(Question question, AnsweredQuestion answeredQuestion, Action<AnsweredQuestion> onAnswerChanged)
         {
             return CreateRadio(question, answeredQuestion, onAnswerChanged);
+        }
+
+        static void RecordUndo()
+        {
+            Undo.RecordObject(UserChoicesObject.instance,"Game Spec Change");
         }
     }
 }

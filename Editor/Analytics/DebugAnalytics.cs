@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -40,10 +39,26 @@ namespace Unity.Multiplayer.Center.Analytics
         
         static string ToString(Package p) => $"Package [{p.PackageId} - Selected {p.SelectedForInstall} - Reco {p.IsRecommended} - Inst {p.IsAlreadyInstalled}]";
         
-        static string ToString(InstallData data) => $"{data.PresetName} - Packages [{data.Packages.Length}] packages: \n{string.Join("\n", data.Packages.Select(ToString))}";
-            
-        static string ToString(RecommendationData data) => $"{data.PresetName} - GameSpecs [{data.GameSpecs.Length}] gamespecs: \n{string.Join("\n", data.GameSpecs.Select(ToString))}";
-        
+        static string ToString(InstallData data)
+        {
+            var packageStrings = new List<string>(data.Packages.Length);
+            foreach (var package in data.Packages)
+            {
+                packageStrings.Add(ToString(package));
+            }
+            return $"{data.PresetName} - Packages [{data.Packages.Length}] packages: \n{string.Join("\n", packageStrings)}";
+        }
+
+        static string ToString(RecommendationData data)
+        {
+            var gameSpecStrings = new List<string>(data.GameSpecs.Length);
+            foreach (var gameSpec in data.GameSpecs)
+            {
+                gameSpecStrings.Add(ToString(gameSpec));
+            }
+            return $"{data.PresetName} - GameSpecs [{data.GameSpecs.Length}] gamespecs: \n{string.Join("\n", gameSpecStrings)}";
+        }
+
         static string ToString(InteractionData data) => $"{data.SectionId}({data.TargetPackageId}) - {data.Type} - {data.DisplayName}";
     }
 }

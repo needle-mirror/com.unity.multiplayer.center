@@ -124,6 +124,8 @@ namespace Unity.Multiplayer.Center.Recommendations
         /// </summary>
         public RecommendedPackageViewData MainPackage;
         
+        public string WarningString;
+        
         public RecommendedSolutionViewData(RecommenderSystemData data, RecommendedSolution solution,
             RecommendationType type, Scoring scoring, Dictionary<string, string> installedPackageDictionary)
         {
@@ -165,6 +167,8 @@ namespace Unity.Multiplayer.Center.Recommendations
 
         public string Name;
         
+        public string PreReleaseVersion;
+        
         /// <summary>
         /// A short description of the feature.
         /// </summary>
@@ -175,6 +179,7 @@ namespace Unity.Multiplayer.Center.Recommendations
             RecommendationType = type;
             PackageId = details.Id;
             Name = details.Name;
+            PreReleaseVersion = details.PreReleaseVersion;
             Selected = type.IsRecommendedPackage();
             ShortDescription = details.ShortDescription;
             Reason = reason;

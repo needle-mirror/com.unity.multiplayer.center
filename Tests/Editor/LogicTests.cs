@@ -12,7 +12,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void TryGetQuestionByQuestionId_IdExists_Found()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
             var success = Logic.TryGetQuestionByQuestionId(questionnaire, questionnaire.Questions[1].Id, out var question);
             Assert.True(success);
             Assert.NotNull(question);
@@ -21,7 +21,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void TryGetQuestionByQuestionId_StringIdExists_Found()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
             var success = Logic.TryGetQuestionByQuestionId(questionnaire, "Pace", out var question);
             Assert.True(success);
             Assert.NotNull(question);
@@ -30,7 +30,7 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void TryGetQuestionByQuestionId_IdDoesNotExist_NotFound()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
             var success = Logic.TryGetQuestionByQuestionId(questionnaire, "nonexistent", out var question);
             Assert.False(success);
             Assert.Null(question);
@@ -39,8 +39,8 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void TryGetAnswerByQuestionId_IdExists_Found()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
-            var userAnswers = RecommendationTestsUtils.BuildAnswerMatching(questionnaire);
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
+            var userAnswers = UtilsForRecommendationTests.BuildAnswerMatching(questionnaire);
             var success = Logic.TryGetAnswerByQuestionId(userAnswers, "PlayerCount", out var answer);
             Assert.True(success);
             Assert.NotNull(answer);
@@ -50,8 +50,8 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void TryGetAnswerByQuestionId_IdDoesNotExist_NotFound()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
-            var userAnswers = RecommendationTestsUtils.BuildAnswerMatching(questionnaire);
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
+            var userAnswers = UtilsForRecommendationTests.BuildAnswerMatching(questionnaire);
             var success = Logic.TryGetAnswerByQuestionId(userAnswers, "nonexistent", out var answer);
             Assert.False(success);
             Assert.Null(answer);
@@ -60,8 +60,8 @@ namespace Unity.MultiplayerCenterTests
         [Test]
         public void TestApplyPresetToAnswerData_WhenPlayerCountIsSet_PlayerCountStays()
         {
-            var questionnaire = RecommendationTestsUtils.GetProjectQuestionnaire();
-            var userAnswers = RecommendationTestsUtils.BuildAnswerMatching(questionnaire);
+            var questionnaire = UtilsForRecommendationTests.GetProjectQuestionnaire();
+            var userAnswers = UtilsForRecommendationTests.BuildAnswerMatching(questionnaire);
             
             Logic.TryGetAnswerByQuestionId(userAnswers, "PlayerCount", out var answer);
             var chosenPlayerCount = Int32.Parse(answer.Answers[0]);

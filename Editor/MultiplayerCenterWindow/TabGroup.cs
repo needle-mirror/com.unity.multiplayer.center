@@ -20,6 +20,22 @@ namespace Unity.Multiplayer.Center.Window
         /// The setter will only be used if the root visual element is null when the tab is created.
         /// </summary>
         VisualElement RootVisualElement { get; set; }
+        
+        /// <summary>
+        /// Sets the tab view visible or not.
+        /// </summary>
+        /// <param name="visible">If true, visible.</param>
+        void SetVisible(bool visible);
+
+        /// <summary>
+        /// If true the Tab can be selected by the user.
+        /// </summary>
+        bool IsEnabled => true;
+
+        /// <summary>
+        /// Tooltip which will be shown on the Tab Button. 
+        /// </summary>
+        string ToolTip => "";
 
         /// <summary>
         /// Refreshes the UI Elements according to latest data.
@@ -41,7 +57,15 @@ namespace Unity.Multiplayer.Center.Window
     [Serializable]
     internal class TabGroup
     {
+        const string k_TabViewName = "tab-view";
         const string k_TabZoneName = "tab-zone";
+        const string k_TabButtonUssClass = "tab-button";
+        
+        // The container for all the tabs
+        const string k_TabsContainerUssClass ="tabs-container";
+        
+        // Gets applied to the root of each tab
+        const string k_TabContentUssClass = "tab-content";
 
         [field: SerializeField]
         public int CurrentTab { get; private set; } = -1;
@@ -82,20 +106,25 @@ namespace Unity.Multiplayer.Center.Window
 
         public void SetSelected(int index, bool force = false)
         {
+            // Select the first tab, if the requested tab is not enabled.
+            // This assumes the first tab is always enabled.
+            if (!m_TabViews[index].IsEnabled)
+                index = 0;
+
             if (index == CurrentTab && !force)
                 return;
 
             if (CurrentTab >= 0 && CurrentTab < m_TabViews.Length)
             {
                 m_TabButtons[CurrentTab].RemoveFromClassList("selected");
-                SetVisible(m_TabViews[CurrentTab].RootVisualElement, false);
+                m_TabViews[CurrentTab].SetVisible(false);
             }
 
             EditorPrefs.SetInt(PlayerSettings.productName + "_MultiplayerCenter_TabIndex", index);
             CurrentTab = index;
             m_TabViews[CurrentTab].Refresh();
             m_TabButtons[CurrentTab].AddToClassList("selected");
-            SetVisible(m_TabViews[CurrentTab].RootVisualElement, true);
+            m_TabViews[CurrentTab].SetVisible(true);
         }
 
         /// <summary>
@@ -112,21 +141,26 @@ namespace Unity.Multiplayer.Center.Window
 
             var tabZone = new VisualElement() {name = k_TabZoneName};
             Root.Add(tabZone);
+            Root.name = k_TabViewName;
             m_TabButtons = new VisualElement[m_TabViews.Length];
-            for (int i = 0; i < m_TabViews.Length; i++)
+            for (var i = 0; i < m_TabViews.Length; i++)
             {
+                var tabView = m_TabViews[i];
                 var index = i; // copy for closure
                 var tabButton = new Button(() => SetSelected(index));
-                tabButton.AddToClassList("tab-button");
-                tabButton.text = m_TabViews[i].Name;
+                tabButton.enabledSelf = tabView.IsEnabled;
+                tabButton.tooltip = tabView.ToolTip;
+                tabButton.AddToClassList(k_TabButtonUssClass);
+                tabButton.text = tabView.Name;
                 tabZone.Add(tabButton);
                 m_TabButtons[i] = tabButton;
-                m_TabViews[i].RootVisualElement ??= new VisualElement();
+                tabView.RootVisualElement ??= new VisualElement();
+                tabView.RootVisualElement.AddToClassList(k_TabContentUssClass);
+                tabView.RootVisualElement.style.display = DisplayStyle.None;
                 m_MainContainer.Add(m_TabViews[i].RootVisualElement);
             }
 
-            m_MainContainer.AddToClassList("tab-container");
-            Root.style.height = Length.Percent(100);
+            m_MainContainer.AddToClassList(k_TabsContainerUssClass);
             Root.Add(m_MainContainer);
             CurrentTab = EditorPrefs.GetInt(PlayerSettings.productName + "_MultiplayerCenter_TabIndex", 0);
         }

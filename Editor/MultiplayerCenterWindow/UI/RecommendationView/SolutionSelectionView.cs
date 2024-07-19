@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Multiplayer.Center.Recommendations;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -23,6 +22,7 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
         readonly Label m_AssociatedFeaturesHeader;
         readonly RecommendationItemView m_MainHostingModelItem;
         readonly VisualElement m_ContainerRoot;
+        readonly HelpBox m_Warning;
         
         protected override VisualElement ContainerRoot => m_ContainerRoot;
         
@@ -43,19 +43,25 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
             m_Header.OnSolutionSelected += () => OnUserChangedSolution?.Invoke();
             m_ContainerRoot = new VisualElement();
             Add(m_ContainerRoot);
+            m_Warning = new HelpBox(null, HelpBoxMessageType.Info);
+            Add(m_Warning);
+            SetVisible(m_Warning, false);
         }
         
         public void UpdateData(RecommendedSolutionViewData[] availableSolutions, List<RecommendedPackageViewData> allPackages)
         {
             m_Header.UpdateData(availableSolutions);
-            UpdateMainPackageView(availableSolutions.First(sol => sol.Selected));
+            var selectedSolution = RecommendationUtils.GetSelectedSolution(availableSolutions);
+            UpdateMainPackageView(selectedSolution);
             UpdatePackageData(allPackages);
-            SetVisible(m_AssociatedFeaturesHeader, allPackages.Count > 0);
+            SetVisible(m_AssociatedFeaturesHeader, allPackages.Count > 0 || selectedSolution.MainPackage != null);
         }
 
         void UpdateMainPackageView(RecommendedSolutionViewData selectedSolution)
         {
             var hasMainPackage = selectedSolution.MainPackage != null;
+            m_Warning.text = selectedSolution.WarningString;
+            SetVisible(m_Warning, !string.IsNullOrEmpty(selectedSolution.WarningString));
             SetVisible(m_MainHostingModelItem, hasMainPackage);
             if (!hasMainPackage) return;
             

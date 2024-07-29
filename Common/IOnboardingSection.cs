@@ -14,7 +14,7 @@ namespace Unity.Multiplayer.Center.Common
     public sealed class OnboardingSectionAttribute : Attribute
     {
         /// <summary>
-        /// The UI category the section will fall into
+        /// The UI category the section will fall into.
         /// </summary>
         public OnboardingSectionCategory Category { get; }
 
@@ -45,13 +45,13 @@ namespace Unity.Multiplayer.Center.Common
         public int Priority { get; set; }
 
         /// <summary>
-        /// Optional: this is the order in which the sections will be displayed in the UI within the section
-        /// (the higher, the further down)
+        /// Optional: this is the order in which the sections will be displayed in the UI within the section.
+        /// (the higher the Order value, the further down)
         /// </summary>
-        public int Order { set; get; }
+        public int Order { get; set; }
 
         /// <summary>
-        /// Optional: the package Id that this section is related to, e.g. "com.unity.transport"
+        /// Optional: the package identifier that this section is related to, e.g. "com.unity.transport".
         /// </summary>
         public string TargetPackageId { get; set; }
 
@@ -68,7 +68,7 @@ namespace Unity.Multiplayer.Center.Common
     }
 
     /// <summary>
-    /// The UI category the section will fall into
+    /// The UI category the section will fall into.
     /// </summary>
     public enum OnboardingSectionCategory
     {
@@ -85,7 +85,7 @@ namespace Unity.Multiplayer.Center.Common
         
         /// <summary>
         /// Section gathering information about connecting players together, such as lobbies, voice chat, matchmaking
-        /// and widgets 
+        /// and widgets.
         /// </summary>
         ConnectingPlayers,
         
@@ -95,12 +95,12 @@ namespace Unity.Multiplayer.Center.Common
         ServerInfrastructure,
         
         /// <summary>
-        /// Something else
+        /// Something else.
         /// </summary>
         Other,
         
         /// <summary>
-        /// LiveOps sections which are meant to be used after some development happened on the game
+        /// LiveOps sections which are meant to be used after some development happened on the game.
         /// </summary>
         LiveOps
     }
@@ -130,7 +130,7 @@ namespace Unity.Multiplayer.Center.Common
     }
 
     /// <summary>
-    /// Defines if a section depends on a certain infrastructure.
+    /// Defines if a section depends on a certain hosting model.
     /// </summary>
     public enum InfrastructureDependency
     {
@@ -150,14 +150,14 @@ namespace Unity.Multiplayer.Center.Common
         DedicatedServer,
         
         /// <summary>
-        /// Only available when the user has selected a custom netcode infrastructure.
+        /// Only available when the user has selected Cloud Code as their hosting model.
         /// </summary>
         CloudCode
     }
 
     /// <summary>
-    /// A view for a single onboarding section. Classes implementing this interface should be marked with one of the
-    /// attributes above.
+    /// A view for a single onboarding section. Classes implementing this interface should be marked with the
+    /// <see cref="OnboardingSectionAttribute"/>.
     /// </summary>
     public interface IOnboardingSection
     {
@@ -177,16 +177,10 @@ namespace Unity.Multiplayer.Center.Common
         /// Frees anything that needs to be.
         /// </summary>
         public void Unload();
-        
-        /// <summary>
-        /// The category for in which this section is.
-        /// </summary>
-        /// <exception cref="NullReferenceException">Thrown if the type is not decorated with <see cref="OnboardingSectionAttribute"/>></exception>
-        public OnboardingSectionCategory Category => GetType().GetCustomAttribute<OnboardingSectionAttribute>().Category;
     }
     
     /// <summary>
-    /// For sections that depend on what the user selected in either the game specs or the package selection.
+    /// For sections that depend on what the user selected in either the game specs or the solution selection.
     /// </summary>
     public interface ISectionDependingOnUserChoices : IOnboardingSection
     {

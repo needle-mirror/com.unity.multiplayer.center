@@ -13,6 +13,7 @@ namespace Unity.Multiplayer.Center.Window
     {
         readonly Label m_PackageCount;
         readonly Button m_InstallPackageButton;
+        readonly Label m_InfoLabel;
         
         IMultiplayerCenterAnalytics m_Analytics;
 
@@ -27,6 +28,7 @@ namespace Unity.Multiplayer.Center.Window
             m_Analytics = analytics;
             name = "bottom-bar";
             m_PackageCount = new Label {name = "package-count"};
+            m_InfoLabel = new Label();
 
             // Setup Install Button
             m_InstallPackageButton = new Button(OnInstallButtonClicked) {text = "Install Packages"};
@@ -37,6 +39,7 @@ namespace Unity.Multiplayer.Center.Window
             installPackageContainer.Add(m_InstallPackageButton);
 
             Add(m_PackageCount);
+            Add(m_InfoLabel);
             Add(installPackageContainer);
         }
 
@@ -66,6 +69,7 @@ namespace Unity.Multiplayer.Center.Window
 
         void InstallSelectedPackagesAndExtension()
         {
+            SetInfoLabelTextAndVisibility("Downloading packages, please wait ...", true);
             m_Window.SetSpinnerIconRotating();
             m_Window.rootVisualElement.SetEnabled(false);
             PackageManagement.InstallPackages(m_PackagesToInstallIds, onAllInstalled: OnInstallationFinished);
@@ -73,6 +77,7 @@ namespace Unity.Multiplayer.Center.Window
 
         void OnInstallationFinished(bool success)
         {
+            SetInfoLabelTextAndVisibility("", false);
             m_Window.RequestShowGettingStartedTabAfterDomainReload();
             m_Window.RemoveSpinnerIconRotating();
         }
@@ -89,6 +94,12 @@ namespace Unity.Multiplayer.Center.Window
             m_PackageCount.text = $"Packages to install: {m_PackagesToInstallNames.Count}";
             // if the list is empty, disable the button
             m_InstallPackageButton.SetEnabled(m_PackagesToInstallNames.Count > 0);
+        }
+
+        internal void SetInfoLabelTextAndVisibility(string text, bool visible)
+        {
+            m_InfoLabel.text = text;
+            m_InfoLabel.visible = visible;
         }
     }
 }

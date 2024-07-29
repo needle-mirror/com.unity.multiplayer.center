@@ -1,7 +1,7 @@
 {
   "name": "com.unity.multiplayer.center",
   "displayName": "Multiplayer Center",
-  "version": "0.4.0",
+  "version": "1.0.0-pre.1",
   "unity": "6000.0",
   "unityRelease": "0b16",
   "description": "The multiplayer center provides a starting point to create a multiplayer game. It will recommend specific packages and enable you to easily access samples and documentation.",
@@ -15,15 +15,15 @@
     "Tools"
   ],
   "_upm": {
-    "changelog": "### Added\n- Added Recommendation for Distributed Authority hosting model with Netcode for GameObjects.\n- Undo support for Recommendation tab.\n\n### Changed\n- Refined the Netcode Recommendation.\n- The Quickstart tab is deactivated if no multiplayer-related package is installed."
+    "changelog": "### Fixed\n- Quickstart Tab: Show HelpBox if no quickstart package is installed but Quickstart Tab is visible."
   },
   "upmCi": {
-    "footprint": "c4e19efd036375746d30241cb0564612d4585a92"
+    "footprint": "f21575878913e032a2852db70d7678b9107cdf61"
   },
-  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.multiplayer.center@0.4/manual/index.html",
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.multiplayer.center@1.0/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/com.unity.multiplayer.center.git",
     "type": "git",
-    "revision": "de117c6c9941083aa4b46479db11ad008a6e6007"
+    "revision": "af0636bfd7130b8b6db5c0bbd813a5cb288ee8ef"
   }
 }

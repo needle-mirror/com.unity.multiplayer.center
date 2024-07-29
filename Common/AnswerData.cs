@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Unity.Multiplayer.Center.Common
 {
     /// <summary>
-    /// Stores what the user answered to the questionnaire
+    /// Stores what the user answered in the GameSpecs questionnaire. The Preset is not included here.
     /// </summary>
     [Serializable]
     public class AnswerData
@@ -16,7 +16,7 @@ namespace Unity.Multiplayer.Center.Common
         public List<AnsweredQuestion> Answers = new();
         
         /// <summary>
-        /// Makes a deep copy of the object
+        /// Makes a deep copy of the object.
         /// </summary>
         /// <returns>The clone</returns>
         public AnswerData Clone()
@@ -26,18 +26,18 @@ namespace Unity.Multiplayer.Center.Common
     }
     
     /// <summary>
-    /// Answer to a single question
+    /// Answer to a single game spec question.
     /// </summary>
     [Serializable]
     public class AnsweredQuestion
     {
         /// <summary>
-        /// The question Id (see <see cref="Question.Id"/>)
+        /// The question identifier as defined in the game spec questionnaire.
         /// </summary>
         public string QuestionId;
         
         /// <summary>
-        /// The answers selected by the user (most often, it contains only one element)
+        /// The answers selected by the user (most often, it contains only one element).
         /// </summary>
         public List<string> Answers;
     }

@@ -14,6 +14,8 @@ namespace Unity.Multiplayer.Center.Recommendations
             new SimplePreReleaseHandling("com.unity.multiplayer.playmode", "1.3"),
             new SimplePreReleaseHandling("com.unity.netcode", "1.3"),
             new SimplePreReleaseHandling("com.unity.dedicated-server", "1.3"),
+            new SimplePreReleaseHandling("com.unity.services.multiplayer", "1.0"),
+            new SimplePreReleaseHandling("com.unity.multiplayer.widgets", "1.0"),
             new DistributedAuthorityPreReleaseHandling(),
         };
 

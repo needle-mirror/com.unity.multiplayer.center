@@ -6,6 +6,7 @@ using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Onboarding;
 using Unity.Multiplayer.Center.Questionnaire;
 using Unity.Multiplayer.Center.Window.UI;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -152,6 +153,11 @@ namespace Unity.Multiplayer.Center.Window
             RootVisualElement ??= new VisualElement();
             RootVisualElement.Clear();
 
+            if (QuickstartIsMissingView.ShouldShow)
+            {
+                RootVisualElement.Add(new QuickstartIsMissingView().RootVisualElement);
+            }
+            
             m_CategoryIndices = new Dictionary<OnboardingSectionCategory, int>();
             m_CategoryContainers = new VisualElement[m_SectionCategories.Length];
             
@@ -189,11 +195,29 @@ namespace Unity.Multiplayer.Center.Window
                 CreateSectionViewsIn(currentContainer, categoryData);
             }
             
+            // Hide the SplitView if we have nothing to show
+            var noContentToShow = index == -1;
+            horizontalContainer.style.display = noContentToShow ? DisplayStyle.None : DisplayStyle.Flex;
+
+            if (noContentToShow && !QuickstartIsMissingView.ShouldShow)
+            {
+                var noContentLabel = new Label("No content is available for the current selection in Netcode Solution and Hosting Model.");
+                noContentLabel.style.marginLeft = noContentLabel.style.marginRight = noContentLabel.style.marginTop = noContentLabel.style.marginBottom = 8;
+                RootVisualElement.Add(noContentLabel);
+            }
+            
             SetSelectedCategory(m_SelectedCategory);
             ulong mask = (ulong) 1 << m_SelectedCategory; 
             buttonGroup.SetValueWithoutNotify(new ToggleButtonGroupState(mask, m_CategoryIndices.Count));
+
+            // MTT-8918 Block the callback on register as it will always return index 0,
+            // which can result in a mismatch between toggle group and selected category.
+            var onCreateFrame = EditorApplication.timeSinceStartup;
             buttonGroup.RegisterValueChangedCallback(evt =>
             {
+                if (Math.Abs(onCreateFrame - EditorApplication.timeSinceStartup) < 0.05f)
+                    return;
+                
                 var selectedIndex = evt.newValue.GetActiveOptions(stackalloc int[evt.newValue.length])[0];
                 SetSelectedCategory(selectedIndex);
             });
@@ -246,12 +270,6 @@ namespace Unity.Multiplayer.Center.Window
             }
         }
         
-        VisualElement CreateIntroContent()
-        {
-            return PackageManagement.IsAnyMultiplayerPackageInstalled() && QuickstartIsMissingView.ShouldShow 
-                ? new QuickstartIsMissingView().RootVisualElement : new VisualElement();
-        }
-
         static VisualElement StartNewSection(VisualElement parent, OnboardingSectionCategory category)
         {
             var container = new VisualElement();

@@ -122,6 +122,8 @@ namespace Unity.Multiplayer.Center.Window
                 () => m_BottomBarView.UpdatePackagesToInstall(m_RecommendationView.CurrentRecommendation, m_RecommendationView.AllPackages);
             RootVisualElement.Add(m_BottomBarView);
             UpdateRecommendation(keepSelection: true);
+            
+            m_BottomBarView.SetInfoLabelTextAndVisibility("Querying packages information ...", !m_PreReleaseHandling.IsReady);
         }
 
         void HandleQuestionnaireDataChanged()

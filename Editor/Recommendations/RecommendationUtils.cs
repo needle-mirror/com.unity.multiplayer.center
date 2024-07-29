@@ -121,7 +121,7 @@ namespace Unity.Multiplayer.Center.Recommendations
 
             // remove last newline
             toolTip = toolTipBuilder.ToString().TrimEnd('\n');
-            ids.Add(QuickstartIsMissingView.PackageId);
+            ids.Add(QuickstartIsMissingView.PackageId + QuickstartIsMissingView.PackageVersion);
         }
 
         /// <summary>

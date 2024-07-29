@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Unity.Multiplayer.Center.Common;
 using Unity.Multiplayer.Center.Questionnaire;
 using Unity.Multiplayer.Center.Window;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -104,6 +105,29 @@ namespace Unity.MultiplayerCenterTests
             Object.DestroyImmediate(UserChoicesObject.instance);
         }
         
+        public static void OpenTabByIndex(int tabIndex)
+        {
+            var multiplayerWindow = EditorWindow.GetWindow<MultiplayerCenterWindow>();
+            multiplayerWindow.CurrentTabTest = tabIndex;
+        }
+
+        public static void SetNetcodeSolutionToCustomNetcode(bool flag)
+        {
+            UserChoicesObject.instance.SelectedSolutions.SelectedNetcodeSolution = flag ? SelectedSolutionsData.NetcodeSolution.CustomNetcode : SelectedSolutionsData.NetcodeSolution.NGO;
+        }
+        
+        public static void SetSelectedSolutionToDistributedAuthority(bool flag)
+        {
+            if (!flag)
+            {
+                UserChoicesObject.instance.SelectedSolutions.SelectedHostingModel = SelectedSolutionsData.HostingModel.ClientHosted;
+                return;
+            }
+
+            UserChoicesObject.instance.SelectedSolutions.SelectedNetcodeSolution = SelectedSolutionsData.NetcodeSolution.NGO;
+            UserChoicesObject.instance.SelectedSolutions.SelectedHostingModel = SelectedSolutionsData.HostingModel.DistributedAuthority;
+        }
+        
         static string GetUserChoicesFullFilePath()
         {
             var choicesObject = UserChoicesObject.instance; 
@@ -114,11 +138,6 @@ namespace Unity.MultiplayerCenterTests
         static string GetUserChoicesTempFilePath()
         {
             return  Path.ChangeExtension(GetUserChoicesFullFilePath(), ".tmp");
-        }
-
-        public static void SetNetcodeSolutionToCustomNetcode(bool flag)
-        {
-            UserChoicesObject.instance.SelectedSolutions.SelectedNetcodeSolution = flag ? SelectedSolutionsData.NetcodeSolution.CustomNetcode : SelectedSolutionsData.NetcodeSolution.NGO;
         }
     }
 }

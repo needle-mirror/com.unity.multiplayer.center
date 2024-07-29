@@ -9,6 +9,8 @@ namespace Unity.Multiplayer.Center.Onboarding
     {
         public const string PackageId = "com.unity.multiplayer.center.quickstart";
 
+        public const string PackageVersion = "@1.0.0-pre.1";
+
         Button m_Button;
         public VisualElement RootVisualElement { get; private set; }
 
@@ -18,12 +20,13 @@ namespace Unity.Multiplayer.Center.Onboarding
         {
             RootVisualElement = new HelpBox("The Quickstart package is not installed, so not all the content will be available in this view.", HelpBoxMessageType.Warning);
             m_Button = new Button(InstallQuickstart) {text = "Install"};
+            RootVisualElement.style.marginLeft = RootVisualElement.style.marginRight = RootVisualElement.style.marginTop = RootVisualElement.style.marginBottom = 8;
             RootVisualElement.Add(m_Button);
         }
         
         void InstallQuickstart()
         {
-            PackageManagement.InstallPackage(PackageId, OnInstallFinished);
+            PackageManagement.InstallPackage(PackageId + PackageVersion, OnInstallFinished);
         }
         
         void OnInstallFinished(bool success)

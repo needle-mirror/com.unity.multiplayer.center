@@ -29,12 +29,12 @@ namespace Unity.Multiplayer.Center.Common
             DedicatedServer,
             
             /// <summary>
-            /// Most of the logic will be in the cloud
+            /// Most of the logic will be in the cloud.
             /// </summary>
             CloudCode,
             
             /// <summary>
-            /// Distributed Authority is a way to distribute the authority of your game logic across multiple clients.
+            /// Distributed Authority (the authority over the game logic is spread across multiple clients).
             /// </summary>
             DistributedAuthority,
         }

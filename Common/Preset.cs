@@ -11,7 +11,7 @@ namespace Unity.Multiplayer.Center.Common
     public enum Preset
     {
         /// <summary>
-        /// Start from scratch, no preset
+        /// Start from scratch, no preset.
         /// </summary>
         [InspectorName("-")]
         None,

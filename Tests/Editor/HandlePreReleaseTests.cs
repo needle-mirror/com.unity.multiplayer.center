@@ -9,7 +9,7 @@ using Object = UnityEngine.Object;
 namespace Unity.MultiplayerCenterTests
 {
     [TestFixture]
-    public class HandlePreReleaseTests
+    class HandlePreReleaseTests
     {
         const string k_NgoPackageId = "com.unity.netcode.gameobjects";
 

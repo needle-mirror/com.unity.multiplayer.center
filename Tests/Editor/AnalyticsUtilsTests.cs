@@ -30,7 +30,7 @@ namespace Unity.MultiplayerCenterTests
             var questionDisplayNames = AnalyticsUtils.GetQuestionDisplayNames(questionnaire);
             Assert.AreEqual("Number of Players per Session", questionDisplayNames["PlayerCount"]);
             Assert.AreEqual("Gameplay Pace", questionDisplayNames["Pace"]);
-            Assert.AreEqual("Cheating / Modding", questionDisplayNames["Cheating"]);
+            Assert.AreEqual("Cheating / Modding Prevention", questionDisplayNames["Cheating"]);
             Assert.AreEqual("Cost Sensitivity", questionDisplayNames["CostSensitivity"]);
             Assert.AreEqual("Netcode Architecture", questionDisplayNames["NetcodeArchitecture"]);
         }

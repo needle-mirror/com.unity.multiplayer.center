@@ -31,7 +31,7 @@ namespace Unity.Multiplayer.Center.Recommendations
         public const string MultiplayerSdkRecommended = "The Multiplayer Services package makes it easy to connect players together using Unity Gaming Services.";
         public const string MultiplayerSdkRecommendedNoNetcode = "The Multiplayer Services package makes it easy to connect players together using Unity Gaming Services. This can also be useful in a no-netcode context.";
         public const string MultiplayerWidgetsRecommended = "Widgets provide pre-implemented building blocks to help you connect players together using services as fast as possible.";
-        public const string MultiplayerWidgetsNotRecommendedBecauseWrongNetcode = "The Multiplayer Widgets package is currently only compatibe with Netcode for GameObjects.";
+        public const string MultiplayerWidgetsNotRecommendedBecauseWrongNetcode = "The Multiplayer Widgets package is currently only recommended with Netcode for GameObjects and Netcode for Entities.";
         public const string DedicatedServerPackageRecommended = "The Dedicated Server package, which includes Content Selection, helps with the development for the dedicated server platforms.";
         public const string DedicatedServerPackageNotRecommended = "The Dedicated Server package is only useful when you have a dedicated server architecture and use Netcode for Gameobjects.";
         public const string DedicatedServerPackageNotRecommendedN4E = "The Dedicated Server package is currently not compatible when using Netcode for Entities.";
@@ -53,7 +53,7 @@ namespace Unity.Multiplayer.Center.Recommendations
         public const string MultiplayerTools = "https://docs-multiplayer.unity3d.com/tools/current/about/";
         public const string MultiplayerPlayMode = "https://docs-multiplayer.unity3d.com/mppm/current/about/";
         public const string MultiplayerSdk = "https://docs.unity3d.com/Packages/com.unity.services.multiplayer@latest";
-        public const string MultiplayerWidgets = null;
+        public const string MultiplayerWidgets = "https://docs.unity3d.com/Packages/com.unity.multiplayer.widgets@latest";
         public const string CloudCode = "https://docs.unity.com/ugs/manual/cloud-code/manual";
         public const string Transport = "https://docs.unity3d.com/Packages/com.unity.transport@latest";
         public const string DedicatedServerPackage = "https://docs.unity3d.com/Packages/com.unity.dedicated-server@latest";
@@ -200,7 +200,7 @@ namespace Unity.Multiplayer.Center.Recommendations
                         new(Packages.EntitiesGraphics, RecommendationType.NetcodeFeatured, Reasons.EntitiesGraphicsRecommended),
                         new(Packages.VivoxId, RecommendationType.OptionalStandard, Reasons.VivoxRecommended),
                         new(Packages.MultiplayerSdkId, RecommendationType.OptionalStandard, Reasons.MultiplayerSdkRecommended),
-                        new(Packages.MultiplayerWidgetsId, RecommendationType.Incompatible, Reasons.MultiplayerWidgetsNotRecommendedBecauseWrongNetcode),
+                        new(Packages.MultiplayerWidgetsId, RecommendationType.OptionalStandard, Reasons.MultiplayerWidgetsRecommended),
                         new(Packages.MultiplayerToolsId, RecommendationType.Incompatible, Reasons.MultiplayerToolsIncompatible),
                         new(Packages.MultiplayerPlayModeId, RecommendationType.OptionalStandard, Reasons.MultiplayerPlayModeRecommended),
                         new(Packages.DedicatedServerPackageId, RecommendationType.Incompatible, Reasons.DedicatedServerPackageNotRecommended)

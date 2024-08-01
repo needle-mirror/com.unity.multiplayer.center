@@ -9,7 +9,7 @@ namespace Unity.Multiplayer.Center.Onboarding
     {
         public const string PackageId = "com.unity.multiplayer.center.quickstart";
 
-        public const string PackageVersion = "@1.0.0-pre.1";
+        public const string PackageVersion = "@1.0.0-pre.2";
 
         Button m_Button;
         public VisualElement RootVisualElement { get; private set; }

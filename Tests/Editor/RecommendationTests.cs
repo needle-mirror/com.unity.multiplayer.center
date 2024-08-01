@@ -17,6 +17,7 @@ namespace Unity.MultiplayerCenterTests
     partial class RecommendationTests
     {
         [SetUp]
+        [TearDown]
         public void Setup()
         {
             Object.DestroyImmediate(RecommenderSystemDataObject.instance); // force reload from disk if accessed
@@ -38,12 +39,14 @@ namespace Unity.MultiplayerCenterTests
         [TestCase(Preset.Shooter,
             "com.unity.netcode",
             "com.unity.entities.graphics",
+            "com.unity.multiplayer.widgets",
             "com.unity.multiplayer.playmode",
             "com.unity.services.multiplayer",
             "com.unity.services.vivox")]
         [TestCase(Preset.Racing,
             "com.unity.netcode",
             "com.unity.entities.graphics",
+            "com.unity.multiplayer.widgets",
             "com.unity.multiplayer.playmode", 
             "com.unity.services.multiplayer",
             "com.unity.services.vivox")]
@@ -68,6 +71,7 @@ namespace Unity.MultiplayerCenterTests
         [TestCase(Preset.Sports,
             "com.unity.netcode",
             "com.unity.entities.graphics",
+            "com.unity.multiplayer.widgets",
             "com.unity.multiplayer.playmode",
             "com.unity.services.multiplayer",
             "com.unity.services.vivox")]
@@ -291,7 +295,7 @@ namespace Unity.MultiplayerCenterTests
             };
             var expectedPackages = new List<string> {"com.unity.netcode", "com.unity.services.multiplayer", 
                 "com.unity.netcode.gameobjects", // added as additional package
-                "com.unity.multiplayer.center.quickstart@1.0.0-pre.1"}; // always added
+                "com.unity.multiplayer.center.quickstart@1.0.0-pre.2"}; // always added
 
             RecommendationUtils.GetPackagesWithAdditionalPackages(mainPackages, out var allPackages, out var allNames, out var tooltip);
             expectedPackages.Sort();

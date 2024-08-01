@@ -154,7 +154,7 @@ MonoBehaviour:
           Comment: can handle fast gameplay
       IsMandatory: 0
     - Id: Cheating
-      Title: Cheating / Modding
+      Title: Cheating / Modding Prevention
       Description: The most common anti-cheating approach is to hide a part of your
         gameplay implementation from clients using a server-authoritative hosting
         model

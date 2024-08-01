@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   RecommenderSystemData:
-    TargetUnityVersion: 6000.0.0f1
+    TargetUnityVersion: 6000.0.10f1
     RecommendedSolutions:
     - Type: 2
       Title: Client Hosted
@@ -135,9 +135,9 @@ MonoBehaviour:
         Reason: The Multiplayer Services package makes it easy to connect players
           together using Unity Gaming Services.
       - PackageId: com.unity.multiplayer.widgets
-        Type: 7
-        Reason: The Multiplayer Widgets package is currently only compatibe with
-          Netcode for GameObjects.
+        Type: 5
+        Reason: Widgets provide pre-implemented building blocks to help you connect
+          players together using services as fast as possible.
       - PackageId: com.unity.multiplayer.tools
         Type: 7
         Reason: Multiplayer Tools is only compatible with Netcode for GameObjects.
@@ -182,8 +182,8 @@ MonoBehaviour:
           context.
       - PackageId: com.unity.multiplayer.widgets
         Type: 7
-        Reason: The Multiplayer Widgets package is currently only compatibe with
-          Netcode for GameObjects.
+        Reason: The Multiplayer Widgets package is currently only recommended with
+          Netcode for GameObjects and Netcode for Entities.
       - PackageId: com.unity.multiplayer.playmode
         Type: 5
         Reason: Multiplayer Play Mode enables you to iterate faster by testing locally
@@ -222,8 +222,8 @@ MonoBehaviour:
           together using Unity Gaming Services.
       - PackageId: com.unity.multiplayer.widgets
         Type: 7
-        Reason: The Multiplayer Widgets package is currently only compatibe with
-          Netcode for GameObjects.
+        Reason: The Multiplayer Widgets package is currently only recommended with
+          Netcode for GameObjects and Netcode for Entities.
       - PackageId: com.unity.multiplayer.tools
         Type: 7
         Reason: Multiplayer Tools is only compatible with Netcode for GameObjects.
@@ -244,61 +244,73 @@ MonoBehaviour:
       ShortDescription: Connect players through voice and text chat.
       DocsUrl: https://docs.unity.com/ugs/en-us/manual/vivox-unity/manual/Unity/Unity
       AdditionalPackages: []
+      PreReleaseVersion: 
     - Id: com.unity.services.multiplayer
       Name: Multiplayer Services
       ShortDescription: Connect players together in sessions for lobby, matchmaker,
         etc.
       DocsUrl: https://docs.unity3d.com/Packages/com.unity.services.multiplayer@latest
       AdditionalPackages: []
+      PreReleaseVersion: 
     - Id: com.unity.multiplayer.widgets
       Name: Multiplayer Widgets
       ShortDescription: Experiment rapidly with multiplayer services.
-      DocsUrl: 
+      DocsUrl: https://docs.unity3d.com/Packages/com.unity.multiplayer.widgets@latest
       AdditionalPackages: []
+      PreReleaseVersion: 
     - Id: com.unity.netcode
       Name: Netcode for Entities
       ShortDescription: Multiplayer synchronization for gameplay based on Entity
         Component System.
       DocsUrl: https://docs.unity3d.com/Packages/com.unity.netcode@latest
       AdditionalPackages: []
+      PreReleaseVersion: 
     - Id: com.unity.netcode.gameobjects
       Name: Netcode for GameObjects
       ShortDescription: Multiplayer synchronization for gameplay based on GameObjects.
       DocsUrl: https://docs-multiplayer.unity3d.com/netcode/current/about/
       AdditionalPackages: []
+      PreReleaseVersion: 
     - Id: com.unity.multiplayer.tools
       Name: Multiplayer Tools
       ShortDescription: Debug and optimize your multiplayer gameplay.
       DocsUrl: https://docs-multiplayer.unity3d.com/tools/current/about/
       AdditionalPackages: []
+      PreReleaseVersion: 
     - Id: com.unity.multiplayer.playmode
       Name: Multiplayer Play Mode
       ShortDescription: Test multiplayer gameplay in separated processes from the
         same project.
       DocsUrl: https://docs-multiplayer.unity3d.com/mppm/current/about/
       AdditionalPackages: []
+      PreReleaseVersion: 
     - Id: com.unity.services.cloudcode
       Name: Cloud Code
       ShortDescription: Run game logic as serverless functions.
       DocsUrl: https://docs.unity.com/ugs/manual/cloud-code/manual
       AdditionalPackages: []
+      PreReleaseVersion: 
     - Id: com.unity.transport
       Name: Transport
       ShortDescription: Low-level networking communication layer.
       DocsUrl: https://docs.unity3d.com/Packages/com.unity.transport@latest
       AdditionalPackages: []
+      PreReleaseVersion: 
     - Id: com.unity.dedicated-server
       Name: Dedicated Server Package
       ShortDescription: Streamline dedicated server builds.
       DocsUrl: https://docs.unity3d.com/Packages/com.unity.dedicated-server@latest
       AdditionalPackages: []
+      PreReleaseVersion: 
     - Id: com.unity.entities.graphics
       Name: Entities Graphics
       ShortDescription: Optimized rendering for Entity Component System.
       DocsUrl: https://docs.unity3d.com/Packages/com.unity.entities.graphics@latest
       AdditionalPackages: []
+      PreReleaseVersion: 
     - Id: com.unity.services.deployment
       Name: Deployment Package
       ShortDescription: Deploy assets to Unity Gaming Services from the Editor.
       DocsUrl: https://docs.unity3d.com/Packages/com.unity.services.deployment@latest
       AdditionalPackages: []
+      PreReleaseVersion: 

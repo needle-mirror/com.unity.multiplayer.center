@@ -20,3 +20,4 @@ When you are making changes in develop that are targeting a future release that 
 3. If you don't know the specific version number of the release these changes will be included in, just put them under "Next Release"
 
 Then, when we have a new release branch and version number, we can move these changelog entries from this file into CHANGELOG.md under the next version number, and delete this file from the release branch as needed.
+

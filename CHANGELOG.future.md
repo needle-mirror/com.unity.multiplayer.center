@@ -21,3 +21,4 @@ When you are making changes in develop that are targeting a future release that 
 
 Then, when we have a new release branch and version number, we can move these changelog entries from this file into CHANGELOG.md under the next version number, and delete this file from the release branch as needed.
 
+## [1.0.0] - 2024-mm-dd

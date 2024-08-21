@@ -123,7 +123,7 @@ namespace Unity.Multiplayer.Center.Window
             RootVisualElement.Add(m_BottomBarView);
             UpdateRecommendation(keepSelection: true);
             
-            m_BottomBarView.SetInfoLabelTextAndVisibility("Querying packages information ...", !m_PreReleaseHandling.IsReady);
+            m_BottomBarView.SetInfoTextForCheckingPackages(!m_PreReleaseHandling.IsReady);
         }
 
         void HandleQuestionnaireDataChanged()

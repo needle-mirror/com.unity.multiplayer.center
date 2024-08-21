@@ -253,19 +253,23 @@ namespace Unity.Multiplayer.Center.Window
             if (m_SectionCategories == null)
                 return;
             
-            foreach (var section in m_SectionCategories)
+            foreach (var category in m_SectionCategories)
             {
-                if (section is not ISectionDependingOnUserChoices dependentSection) continue;
+                if (category == null) continue;
+                foreach (var section in category.Sections)
+                {
+                    if (section is not ISectionDependingOnUserChoices dependentSection) continue;
 
-                try
-                {
-                    dependentSection.HandleAnswerData(UserChoicesObject.instance.UserAnswers);
-                    dependentSection.HandlePreset(UserChoicesObject.instance.Preset);
-                    dependentSection.HandleUserSelectionData(UserChoicesObject.instance.SelectedSolutions);
-                }
-                catch (Exception e)
-                {
-                     Debug.LogWarning($"Could not set data for onboarding section {section.GetType()}: {e}");
+                    try
+                    {
+                        dependentSection.HandleAnswerData(UserChoicesObject.instance.UserAnswers);
+                        dependentSection.HandlePreset(UserChoicesObject.instance.Preset);
+                        dependentSection.HandleUserSelectionData(UserChoicesObject.instance.SelectedSolutions);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning($"Could not set data for onboarding section {section.GetType()}: {e}");
+                    }   
                 }
             }
         }
@@ -306,7 +310,7 @@ namespace Unity.Multiplayer.Center.Window
                 OnboardingSectionCategory.ConnectingPlayers => "Connecting Players",
                 OnboardingSectionCategory.ServerInfrastructure => "Hosting",
                 OnboardingSectionCategory.Other => "Other",
-                _ => "Unknown"
+                _ => category.ToString()
             };
         }
     }

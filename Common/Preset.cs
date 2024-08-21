@@ -8,6 +8,7 @@ namespace Unity.Multiplayer.Center.Common
     /// except for `None`.
     /// </summary>
     [Serializable]
+    [InspectorOrder()] // will sort the values alphabetically in the inspector
     public enum Preset
     {
         /// <summary>

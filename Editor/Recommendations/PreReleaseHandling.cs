@@ -9,24 +9,24 @@ namespace Unity.Multiplayer.Center.Recommendations
     internal class PreReleaseHandling
     {
         [SerializeReference]
-        PreReleaseHandlingBase[] m_PreReleaseHandledPackages =
+        PreReleaseHandlingBase[] m_PreReleaseHandlings =
         {
             new SimplePreReleaseHandling("com.unity.multiplayer.playmode", "1.3"),
             new SimplePreReleaseHandling("com.unity.netcode", "1.3"),
             new SimplePreReleaseHandling("com.unity.dedicated-server", "1.3"),
             new SimplePreReleaseHandling("com.unity.services.multiplayer", "1.0"),
             new SimplePreReleaseHandling("com.unity.multiplayer.widgets", "1.0"),
-            new DistributedAuthorityPreReleaseHandling(),
+            new SimplePreReleaseHandling("com.unity.netcode.gameobjects", "2.0")
         };
 
         public event Action OnAllChecksFinished;
 
-        public bool IsReady => m_PreReleaseHandledPackages != null && 
-            Array.TrueForAll(m_PreReleaseHandledPackages, p => p is {IsReady: true});
+        public bool IsReady => m_PreReleaseHandlings != null && 
+            Array.TrueForAll(m_PreReleaseHandlings, p => p is {IsReady: true});
 
         public void CheckForUpdates()
         {
-            foreach (var package in m_PreReleaseHandledPackages)
+            foreach (var package in m_PreReleaseHandlings)
             {
                 package.OnCheckFinished += OnOnePackageVersionCheckFinished;
                 package.CheckForUpdates();
@@ -35,7 +35,7 @@ namespace Unity.Multiplayer.Center.Recommendations
 
         public void PatchPackages(RecommendationViewData toPatch)
         {
-            foreach (var package in m_PreReleaseHandledPackages)
+            foreach (var package in m_PreReleaseHandlings)
             {
                 package.PatchPackages(toPatch);
             }
@@ -43,7 +43,7 @@ namespace Unity.Multiplayer.Center.Recommendations
 
         public void PatchRecommenderSystemData()
         {
-            foreach (var package in m_PreReleaseHandledPackages)
+            foreach (var package in m_PreReleaseHandlings)
             {
                 package.PatchRecommenderSystemData();
             }
@@ -52,7 +52,7 @@ namespace Unity.Multiplayer.Center.Recommendations
         void OnOnePackageVersionCheckFinished()
         {
             var allVersionChecksDone = true;
-            foreach (var package in m_PreReleaseHandledPackages)
+            foreach (var package in m_PreReleaseHandlings)
             {
                 allVersionChecksDone &= package.IsReady;
                 if (package.IsReady)
@@ -184,89 +184,6 @@ namespace Unity.Multiplayer.Center.Recommendations
                     package.PreReleaseVersion = GetPreReleaseVersion(m_DefaultVersion, m_VersionsInfo);
                 }
             }
-        }
-    }
-
-    /// <summary>
-    /// Patches the RecommendationData to handle distributed authority.
-    /// It checks that the min netcode package is available
-    /// </summary>
-    [Serializable]
-    internal class DistributedAuthorityPreReleaseHandling : PreReleaseHandlingBase
-    {
-        public override string MinVersion => "2.0";
-        public override string PackageId => "com.unity.netcode.gameobjects";
-
-        [field: SerializeField]
-        public bool IsDistributedAuthoritySupported { get; private set; }
-
-        public DistributedAuthorityPreReleaseHandling() { }
-
-        /// <summary>
-        /// Updates the compatibility of NGO with Distributed Authority so that we know whether to show DA or not.
-        /// </summary>
-        public override void PatchRecommenderSystemData()
-        {
-            if (!IsReady) return;
-
-            const string reasonIncompatibility = "Distributed Authority is not supported yet";
-            RecommenderSystemDataObject.instance.RecommenderSystemData.UpdateIncompatibility(PossibleSolution.NGO,
-                PossibleSolution.DA, IsDistributedAuthoritySupported, reasonIncompatibility);
-        }
-
-        /// <summary>
-        /// Sets the version of NGO to use in the recommendation view data based on the context:
-        ///  - if DA is selected, we need a 2.0 release
-        ///  - if DA is not selected, we should use the default release
-        /// </summary>
-        /// <param name="toPatch">The recommendation view data to modify</param>
-        public override void PatchPackages(RecommendationViewData toPatch)
-        {
-            if (!IsReady || toPatch == null) return;
-
-            PatchInternal(toPatch, m_DefaultVersion, m_VersionsInfo);
-        }
-
-        protected override void BeforeRaisingCheckFinished()
-        {
-            IsDistributedAuthoritySupported = IsDistributedAuthoritySupportedFor(m_DefaultVersion, m_VersionsInfo);
-        }
-
-        internal void PatchInternal(RecommendationViewData toPatch, string version, VersionsInfo versionsInfo)
-        {
-            string newNgoVersion =
-                RecommendationUtils.GetSelectedHostingModel(toPatch).Solution == PossibleSolution.DA
-                    ? GetPreReleaseVersion(version, versionsInfo)
-                    : null;
-
-            foreach (var p in toPatch.NetcodeOptions)
-            {
-                if (p.Solution == PossibleSolution.NGO)
-                {
-                    p.MainPackage.PreReleaseVersion = newNgoVersion;
-                }
-            }
-
-            foreach (var s in toPatch.ServerArchitectureOptions)
-            {
-                if (s.Solution == PossibleSolution.DA)
-                    s.WarningString = IsDistributedAuthoritySupportedFor(version, versionsInfo)
-                        ? $"Distributed authority is only supported in a pre-release version of Netcode for GameObjects. This will install Netcode for GameObjects version {newNgoVersion}"
-                        : null;
-            }
-        }
-
-        internal DistributedAuthorityPreReleaseHandling(string defaultVersion, VersionsInfo versionsInfo)
-        {
-            m_DefaultVersion = defaultVersion;
-            m_VersionsInfo = versionsInfo;
-            IsDistributedAuthoritySupported = IsDistributedAuthoritySupportedFor(defaultVersion, versionsInfo);
-        }
-
-        internal bool IsDistributedAuthoritySupportedFor(string version, VersionsInfo versionsInfo)
-        {
-            return version != null && version.StartsWith(MinVersion)
-                || GetPreReleaseVersion(version, versionsInfo) != null;
         }
     }
 }

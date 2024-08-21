@@ -295,7 +295,7 @@ namespace Unity.MultiplayerCenterTests
             };
             var expectedPackages = new List<string> {"com.unity.netcode", "com.unity.services.multiplayer", 
                 "com.unity.netcode.gameobjects", // added as additional package
-                "com.unity.multiplayer.center.quickstart@1.0.0-pre.2"}; // always added
+                "com.unity.multiplayer.center.quickstart@1.0.0-pre.3"}; // always added
 
             RecommendationUtils.GetPackagesWithAdditionalPackages(mainPackages, out var allPackages, out var allNames, out var tooltip);
             expectedPackages.Sort();

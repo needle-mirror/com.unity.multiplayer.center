@@ -128,7 +128,20 @@ namespace Unity.Multiplayer.Center
         }
 
         /// <summary>
-        /// Installs several packages and invokes the callback when all packages are installed/when the install failed.
+        /// Register to an existing installation callback. This has no effect if no installation is ongoing (check
+        /// <see cref="IsInstallationFinished"/> to see if that is the case).
+        /// </summary>
+        /// <param name="onInstalled">The callback</param>
+        public static void RegisterToExistingInstaller(Action<bool> onInstalled)
+        {
+            if (s_Installer != null)
+            {
+                s_Installer.OnInstalled += onInstalled;
+            }
+        }
+        
+        /// <summary>
+        /// Installs several packages and invokes the callback when all packages are installed/when the installation failed.
         /// </summary>
         /// <param name="packageIds">The package names/ids e.g. com.unity.netcode</param>
         /// <param name="onAllInstalled">The callback</param>

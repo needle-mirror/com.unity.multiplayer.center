@@ -1,7 +1,7 @@
 {
   "name": "com.unity.multiplayer.center",
   "displayName": "Multiplayer Center",
-  "version": "1.0.0-pre.2",
+  "version": "1.0.0-pre.3",
   "unity": "6000.0",
   "unityRelease": "0b16",
   "description": "The multiplayer center provides a starting point to create a multiplayer game. It will recommend specific packages and enable you to easily access samples and documentation.",
@@ -15,15 +15,15 @@
     "Tools"
   ],
   "_upm": {
-    "changelog": "### Changed\n- Widgets are now recommended for Netcode for Entities."
+    "changelog": "### Fixed\n- The Quickstart tab was not automatically shown after installing packages\n- Made the UI look more responsive when reopening the window during package installation\n- Added vertical Scrollbar to the Game specifications section\n\n### Changed\n- Always installing the latest Netcode for GameObjects 2.0.0-pre.x when it is selected as Netcode solution\n- Made loading wheel more visible when installing packages (dark mode)\n- Sort the game genre list alphabetically in the Recommendations tab"
   },
   "upmCi": {
-    "footprint": "65aad3771a3cba2457bf88b93fd6207ff4177559"
+    "footprint": "2ba522a1aff15811bb93ba7e64feee07f1c395d8"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.multiplayer.center@1.0/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/com.unity.multiplayer.center.git",
     "type": "git",
-    "revision": "31b09b346aab951fe607dad337ab684e79d533e2"
+    "revision": "2841d7cc8216e6d8fbb7949e69d935ecdc676a79"
   }
 }

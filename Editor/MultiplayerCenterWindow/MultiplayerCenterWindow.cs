@@ -13,10 +13,15 @@ namespace Unity.Multiplayer.Center.Window
 
         VisualElement m_SpinningIcon;
 
+        /// <summary>
+        /// Nest the main container in a VisualElement to allow for easy enabling/disabling of the entire window but
+        /// without the spinning icon.
+        /// </summary>
+        VisualElement m_MainContainer;
+
         Vector2 m_WindowSize = new(350, 300);
 
         public int CurrentTab => m_TabGroup.CurrentTab;
-
 
         // Testing purposes only. We don't want to set CurrentTab from window
         internal int CurrentTabTest
@@ -41,7 +46,7 @@ namespace Unity.Multiplayer.Center.Window
         [MenuItem("Window/Multiplayer/Multiplayer Center")]
         public static void OpenWindow()
         {
-            bool showUtility = false; // TODO: figure out if it would be a good idea to have a utility window (always on top, cannot be tabbed)
+            var showUtility = false; // TODO: figure out if it would be a good idea to have a utility window (always on top, cannot be tabbed)
             GetWindow<MultiplayerCenterWindow>(showUtility, "Multiplayer Center", true);
         }
 
@@ -53,7 +58,7 @@ namespace Unity.Multiplayer.Center.Window
         }
 
         /// <summary>
-        /// Changes Tab from Recommendation to the Getting Started 
+        /// Changes Tab from Recommendation to the Quickstart tab.
         /// </summary>
         public void RequestShowGettingStartedTabAfterDomainReload()
         {
@@ -61,13 +66,33 @@ namespace Unity.Multiplayer.Center.Window
 
             // If no domain reload is necessary, this will be called. 
             // If domain reload is necessary, the delay call will be forgotten, but CreateGUI will be called like after any domain reload
-            EditorApplication.delayCall += CreateGUI;
+            // An extra delay is added to make sure that the visibility conditions of the Quickstart tab have been
+            // fully evaluated. This solves MTT-8939.
+            EditorApplication.delayCall += () =>
+            {
+                rootVisualElement.schedule.Execute(CallCreateGuiWithQuickstartRequest).ExecuteLater(300);
+            };
+        }
+
+        internal void DisableUiForInstallation()
+        {
+            SetSpinnerIconRotating();
+            m_MainContainer.SetEnabled(false);
+        }
+
+        internal void ReenableUiAfterInstallation()
+        {
+            RemoveSpinnerIconRotating();
+            m_MainContainer.SetEnabled(true);
         }
 
         void CreateGUI()
         {
-            rootVisualElement.Clear();
             rootVisualElement.name = "root";
+            m_MainContainer ??= new VisualElement();
+            m_MainContainer.name = "recommendation-tab-container";
+            m_MainContainer.Clear();
+            rootVisualElement.Add(m_MainContainer);
             m_SpinningIcon = new VisualElement();
             var theme = EditorGUIUtility.isProSkin ? "dark" : "light";
             rootVisualElement.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>($"{k_PathInPackage}/UI/{theme}.uss"));
@@ -79,11 +104,23 @@ namespace Unity.Multiplayer.Center.Window
                 m_TabGroup.MultiplayerCenterAnalytics = MultiplayerCenterAnalytics;
 
             m_TabGroup.CreateTabs();
-            rootVisualElement.Add(m_TabGroup.Root);
+            m_MainContainer.Add(m_TabGroup.Root);
 
-            var shouldEnable = m_RequestGettingStartedTabAfterDomainReload;
+            var installationInProgress = !PackageManagement.IsInstallationFinished();
+            SetWindowContentEnabled(installationInProgress, m_RequestGettingStartedTabAfterDomainReload);
+            ShowAppropriateTab(installationInProgress);
+        }
 
-            if (shouldEnable)
+        void ShowAppropriateTab(bool installationInProgress)
+        {
+            if (installationInProgress)
+            {
+                PackageManagement.RegisterToExistingInstaller(b => RequestShowGettingStartedTabAfterDomainReload());
+                m_TabGroup.SetSelected(0, force: true);
+                return;
+            }
+            
+            if (m_RequestGettingStartedTabAfterDomainReload)
             {
                 m_RequestGettingStartedTabAfterDomainReload = false;
                 m_TabGroup.SetSelected(1, force: true);
@@ -92,27 +129,36 @@ namespace Unity.Multiplayer.Center.Window
             {
                 m_TabGroup.SetSelected(m_TabGroup.CurrentTab, force: true);
             }
-
-            SetRootElementEnabled(shouldEnable);
         }
 
-        void SetRootElementEnabled(bool shouldEnable)
+        void SetWindowContentEnabled(bool installationInProgress, bool quickstartRequested)
         {
-            var isInstallationFinished = PackageManagement.IsInstallationFinished();
-            rootVisualElement.SetEnabled(isInstallationFinished || shouldEnable);
-
+            m_MainContainer.SetEnabled(!installationInProgress || quickstartRequested);
+            
             // if we are current already processing an installation, show the spinning icon
-            if (!isInstallationFinished)
-                SetSpinnerIconRotating();
+            if (installationInProgress)
+            {
+                // Wait a bit because the animation does not trigger when we call this in CreateGUI
+                EditorApplication.delayCall += SetSpinnerIconRotating;
+            }
+
             rootVisualElement.Add(m_SpinningIcon);
         }
-        
-        internal void SetSpinnerIconRotating()
+
+        void CallCreateGuiWithQuickstartRequest()
+        {
+            // Interestingly, setting this before registering the delay call sometimes results in the value
+            // being false when CreateGUI starts, so we set it again here.
+            m_RequestGettingStartedTabAfterDomainReload = true;
+            CreateGUI();
+        }
+
+        void SetSpinnerIconRotating()
         {
             m_SpinningIcon.AddToClassList(k_SpinnerClassName);
         }
 
-        internal void RemoveSpinnerIconRotating()
+        void RemoveSpinnerIconRotating()
         {
             m_SpinningIcon?.RemoveFromClassList(k_SpinnerClassName);
         }

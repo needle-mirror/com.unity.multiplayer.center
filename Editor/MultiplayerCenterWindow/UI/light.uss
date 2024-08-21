@@ -20,6 +20,7 @@
     --tab-button-highlight-color: black;
     --onboarding-button-selected-text-color: white;
     --three-dot-icon: resource("UIBuilderPackageResources/Icons/Light/Inspector/Status/Settings.png");
+    --spinner-icon-big: url('Icons/Loading.png');
 }
 
 .color-recommendation-badge {

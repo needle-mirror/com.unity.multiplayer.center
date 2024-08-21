@@ -3,6 +3,18 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-pre.3] - 2024-08-21
+
+### Fixed
+- The Quickstart tab was not automatically shown after installing packages
+- Made the UI look more responsive when reopening the window during package installation
+- Added vertical Scrollbar to the Game specifications section
+
+### Changed
+- Always installing the latest Netcode for GameObjects 2.0.0-pre.x when it is selected as Netcode solution
+- Made loading wheel more visible when installing packages (dark mode)
+- Sort the game genre list alphabetically in the Recommendations tab
+
 ## [1.0.0-pre.2] - 2024-08-01
 
 ### Changed

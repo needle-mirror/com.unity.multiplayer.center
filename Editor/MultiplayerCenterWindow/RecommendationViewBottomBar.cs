@@ -69,17 +69,16 @@ namespace Unity.Multiplayer.Center.Window
 
         void InstallSelectedPackagesAndExtension()
         {
-            SetInfoLabelTextAndVisibility("Downloading packages, please wait ...", true);
-            m_Window.SetSpinnerIconRotating();
-            m_Window.rootVisualElement.SetEnabled(false);
+            SetInfoTextForInstallation(isInstalling:true);
+            m_Window.DisableUiForInstallation();
             PackageManagement.InstallPackages(m_PackagesToInstallIds, onAllInstalled: OnInstallationFinished);
         }
 
         void OnInstallationFinished(bool success)
         {
-            SetInfoLabelTextAndVisibility("", false);
+            SetInfoTextForInstallation(isInstalling:false);
             m_Window.RequestShowGettingStartedTabAfterDomainReload();
-            m_Window.RemoveSpinnerIconRotating();
+            m_Window.ReenableUiAfterInstallation();
         }
 
         public void UpdatePackagesToInstall(RecommendationViewData data, SolutionsToRecommendedPackageViewData packageViewData)
@@ -96,10 +95,26 @@ namespace Unity.Multiplayer.Center.Window
             m_InstallPackageButton.SetEnabled(m_PackagesToInstallNames.Count > 0);
         }
 
-        internal void SetInfoLabelTextAndVisibility(string text, bool visible)
+        internal void SetInfoTextForInstallation(bool isInstalling)
+        {
+            SetInfoLabelTextAndVisibility("Downloading packages, please wait ...", isInstalling);
+        }
+
+        internal void SetInfoTextForCheckingPackages(bool isChecking)
+        {
+            SetInfoLabelTextAndVisibility("Querying packages information ...", isChecking);
+            
+            // Handle the case of reopening the window during the installation.
+            // When reopening the window, the packages are being checked. Once that check is done, we still want to 
+            // display the installation package text if there is an ongoing installation.
+            if(!isChecking && !PackageManagement.IsInstallationFinished())
+                SetInfoTextForInstallation(isInstalling:true);
+        }
+
+        void SetInfoLabelTextAndVisibility(string text, bool isVisible)
         {
             m_InfoLabel.text = text;
-            m_InfoLabel.visible = visible;
+            m_InfoLabel.visible = isVisible;
         }
     }
 }

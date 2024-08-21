@@ -50,10 +50,7 @@ namespace Unity.Multiplayer.Center.Window.UI
             title.AddToClassList(StyleClasses.ViewHeadline);
             Add(title);
             
-            var withScrollView = !mandatoryQuestions;
-            if (!withScrollView)
-                AddToClassList(StyleClasses.QuestionSectionNoScrollbar);
-            ContentRoot = CreateContentRoot(withScrollView);
+            ContentRoot = CreateContentRoot(true);
 
             Add(ContentRoot);
 

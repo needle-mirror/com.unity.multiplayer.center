@@ -29,7 +29,7 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
 
         VisualElement m_Content;
 
-        PreReleaseHandling m_DistributedAuthorityPreReleaseHandling;
+        PreReleaseHandling m_PreReleaseHandling;
 
         //Todo: for now check on the view but actually should be on the model
         public Action OnPackageSelectionChanged;
@@ -66,10 +66,10 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
             UpdateView(false);
         }
 
-        public void UpdateRecommendation(RecommendationViewData recommendation, PreReleaseHandling daHandling)
+        public void UpdateRecommendation(RecommendationViewData recommendation, PreReleaseHandling preReleaseHandling)
         {
             m_Recommendation = recommendation;
-            m_DistributedAuthorityPreReleaseHandling = daHandling;
+            m_PreReleaseHandling = preReleaseHandling;
             UpdateView(false);
         }
 
@@ -106,7 +106,7 @@ namespace Unity.Multiplayer.Center.Window.UI.RecommendationView
             }
             
             RecommenderSystem.AdaptRecommendationToNetcodeSelection(m_Recommendation);
-            m_DistributedAuthorityPreReleaseHandling.PatchPackages(m_Recommendation);
+            m_PreReleaseHandling.PatchPackages(m_Recommendation);
             
             var selectedNetcode = RecommendationUtils.GetSelectedNetcode(m_Recommendation);
             var selectedHostingModel = RecommendationUtils.GetSelectedHostingModel(m_Recommendation);

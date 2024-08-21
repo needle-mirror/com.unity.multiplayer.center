@@ -20,4 +20,5 @@
     --tab-button-highlight-color: #DEDEDE;
     --onboarding-button-selected-text-color: #EEEEEE;
     --three-dot-icon: resource("UIBuilderPackageResources/Icons/Dark/Inspector/Status/Settings.png");
+    --spinner-icon-big: url('Icons/d_Loading.png');
 }
